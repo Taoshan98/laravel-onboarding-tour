@@ -21,7 +21,8 @@
         page: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
         card: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 9h16"/></svg>`,
         target: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><circle cx="12" cy="12" r="5" stroke-width="1.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>`,
-        backdrop: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`
+        backdrop: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`,
+        media: `<svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`
     };
 
     function t(key, fallback) {
@@ -50,10 +51,21 @@
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function formatMediaHtml(url) {
-        if (!url || typeof url !== 'string' || !url.trim()) return '';
+    function sanitizeUrl(url) {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (/^https:\/\//i.test(trimmed) || /^\//.test(trimmed) || /^data:image\/(png|jpg|jpeg|gif|webp|svg\+xml);base64,/i.test(trimmed)) {
+            return trimmed;
+        }
+        if (/^http:\/\//i.test(trimmed)) {
+            return trimmed.replace(/^http:\/\//i, 'https://');
+        }
+        return '';
+    }
 
-        const cleanUrl = url.trim();
+    function formatMediaHtml(url) {
+        const cleanUrl = sanitizeUrl(url);
+        if (!cleanUrl) return '';
 
         const expandBtnHtml = `
             <button type="button" class="tour-media-expand-btn" title="${t('expand_media', 'Expand full screen')}" data-media-url="${cleanUrl}">
@@ -473,6 +485,8 @@
             if (this.inspectorActive) {
                 this.renderInspectorBar();
                 document.addEventListener('mousemove', this._onMouseMove = (e) => this.handleInspectorHover(e));
+                document.addEventListener('mousedown', this._onMouseDown = (e) => this._preventNav(e), true);
+                document.addEventListener('pointerdown', this._onPointerDown = (e) => this._preventNav(e), true);
                 document.addEventListener('click', this._onClick = (e) => this.handleInspectorClick(e), true);
                 this.showToast(t('builder_enabled', 'Builder Mode enabled'), 'info');
             } else {
@@ -481,6 +495,8 @@
                 this.closeStepManagerDrawer();
                 this.removeInspectorOutline();
                 if (this._onMouseMove) document.removeEventListener('mousemove', this._onMouseMove);
+                if (this._onMouseDown) document.removeEventListener('mousedown', this._onMouseDown, true);
+                if (this._onPointerDown) document.removeEventListener('pointerdown', this._onPointerDown, true);
                 if (this._onClick) document.removeEventListener('click', this._onClick, true);
                 this.showToast(t('builder_disabled', 'Builder Mode disabled'), 'info');
             }
@@ -581,22 +597,26 @@
                         </div>
                     `;
                 } else {
-                    stepsListHtml = this.draftSteps.map((step, idx) => `
-                        <div class="tour-drawer-step-item tour-card-box flex items-start justify-between gap-3 p-3.5 hover:border-blue-500/50 transition-all group" draggable="true" data-idx="${idx}">
-                            <div class="flex items-center gap-2.5 mt-0.5">
-                                <span class="drag-handle p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded cursor-grab" title="${t('drag_to_reorder', 'Drag to reorder')}">
+                    stepsListHtml = this.draftSteps.map((step, idx) => {
+                        const hasMedia = !!(step.video_url || step.media_url);
+                        return `
+                        <div class="tour-drawer-step-item tour-card-box flex items-center justify-between gap-2.5 px-3 py-2.5 hover:border-blue-500/50 transition-all group" draggable="true" data-idx="${idx}">
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <span class="drag-handle p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded cursor-grab" title="${t('drag_to_reorder', 'Drag to reorder')}">
                                     ${SVG.grip}
                                 </span>
-                                <span class="step-num-badge tour-badge-accent w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                <span class="step-num-badge tour-badge-accent w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center flex-shrink-0">
                                     ${idx + 1}
                                 </span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h5 class="text-xs font-bold text-zinc-800 dark:text-zinc-100 truncate">${step.title}</h5>
-                                <p class="text-[10px] font-mono text-zinc-400 truncate mt-0.5">${step.element_selector}</p>
-                                ${step.video_url || step.media_url ? `<span class="inline-block mt-1 text-[9px] font-semibold text-purple-500 bg-purple-500/10 px-1.5 py-0.5 rounded">${t('media_included', 'Media Included')}</span>` : ''}
+                                <div class="flex items-center gap-1.5">
+                                    <h5 class="text-xs font-bold text-zinc-800 dark:text-zinc-100 truncate">${step.title}</h5>
+                                    ${hasMedia ? `<span class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-purple-500 bg-purple-500/10 dark:bg-purple-500/20 px-1.5 py-0.5 rounded-full flex-shrink-0" title="${t('media_included', 'Media Included')}">${SVG.media}</span>` : ''}
+                                </div>
+                                <p class="text-[10px] font-mono text-zinc-400 truncate leading-tight mt-0.5">${step.element_selector}</p>
                             </div>
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-0.5 flex-shrink-0">
                                 <button class="tour-test-step-btn p-1.5 rounded-lg text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30" title="${t('test_step', 'Test highlight')}" data-idx="${idx}">
                                     ${SVG.eye}
                                 </button>
@@ -608,7 +628,8 @@
                                 </button>
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
                 }
 
                 bodyContentHtml = `
@@ -1117,26 +1138,7 @@
                 panel.querySelectorAll('.tour-test-step-btn').forEach(btn => {
                     btn.onclick = () => {
                         const idx = parseInt(btn.getAttribute('data-idx'));
-                        const step = this.draftSteps[idx];
-                        let safeSel = (step.element_selector || '')
-                            .replace(/\[wire:key=/g, '[wire\\3a key=')
-                            .replace(/\[wire:id=/g, '[wire\\3a id=');
-                        let targetEl = null;
-                        try {
-                            targetEl = document.querySelector(safeSel);
-                        } catch (e) { }
-
-                        if (!targetEl && step.target_text) {
-                            targetEl = this.findByTextContent(step.target_text);
-                        }
-
-                        if (targetEl) {
-                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            this.showOutline(targetEl);
-                            this.showToast(t('test_step_success', 'Element highlighted'), 'info');
-                        } else {
-                            this.showToast(t('test_step_error', 'Element not found'), 'error');
-                        }
+                        this.testSingleStep(idx);
                     };
                 });
 
@@ -1244,7 +1246,14 @@
         handleInspectorHover: function (e) {
             if (!this.inspectorActive) return;
             const target = e.target;
-            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel')) {
+            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel') || target.closest('#tour-popover-card') || target.closest('#tour-spotlight-mask')) {
+                this.removeInspectorOutline();
+                return;
+            }
+
+            const drawerOpen = !!document.getElementById('tour-drawer-panel');
+            if (drawerOpen) {
+                this.removeInspectorOutline();
                 return;
             }
 
@@ -1278,6 +1287,18 @@
             badge.innerText = selector;
         },
 
+        _preventNav: function (e) {
+            if (!this.inspectorActive) return;
+            const target = e.target;
+            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel') || target.closest('#tour-popover-card') || target.closest('#tour-spotlight-mask')) {
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        },
+
         removeInspectorOutline: function () {
             const outline = document.getElementById('tour-inspector-outline');
             if (outline) outline.remove();
@@ -1286,12 +1307,20 @@
         handleInspectorClick: function (e) {
             if (!this.inspectorActive) return;
             const target = e.target;
-            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel')) {
+            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel') || target.closest('#tour-popover-card') || target.closest('#tour-spotlight-mask')) {
                 return;
             }
 
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+
+            const drawerOpen = !!document.getElementById('tour-drawer-panel');
+            if (drawerOpen) {
+                this.closeStepManagerDrawer();
+                this.removeInspectorOutline();
+                return;
+            }
 
             this.selectedElement = target;
             this.openStepBuilderModal(target);
@@ -1576,6 +1605,99 @@
                 }
             }
             return null;
+        },
+
+        testSingleStep: function (index) {
+            if (!this.draftSteps || index < 0 || index >= this.draftSteps.length) return;
+
+            const step = this.draftSteps[index];
+            let safeSel = (step.element_selector || '')
+                .replace(/\[wire:key=/g, '[wire\\3a key=')
+                .replace(/\[wire:id=/g, '[wire\\3a id=')
+                .replace(/\[wire:model=/g, '[wire\\3a model=');
+            let targetEl = null;
+
+            try {
+                targetEl = document.querySelector(safeSel);
+            } catch (e) {}
+
+            if (!targetEl && step.target_text) {
+                targetEl = this.findByTextContent(step.target_text);
+            }
+
+            if (!targetEl) {
+                this.showToast(t('test_step_error', 'Element not found on page'), 'error');
+                return;
+            }
+
+            this.closeStepManagerDrawer();
+            this.applyThemeVariables(this.themeSettings);
+
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+
+            setTimeout(() => {
+                this.updateSpotlight(targetEl);
+                this.renderSingleStepTestPopover(targetEl, step, index);
+            }, 250);
+        },
+
+        renderSingleStepTestPopover: function (targetEl, step, index) {
+            let popover = document.getElementById('tour-popover-card');
+            if (!popover) {
+                popover = document.createElement('div');
+                popover.id = 'tour-popover-card';
+                document.body.appendChild(popover);
+            }
+
+            const sizeClass = step.card_size || this.themeSettings.card_size || 'md';
+            popover.className = `tour-popover-card card-${this.themeSettings.card_style || 'auto'} size-${sizeClass}`;
+
+            const rect = targetEl.getBoundingClientRect();
+            let maxWidth = 380;
+            if (sizeClass === 'sm') maxWidth = 320;
+            if (sizeClass === 'lg') maxWidth = 460;
+            if (sizeClass === 'xl') maxWidth = 560;
+
+            let top = rect.bottom + 12;
+            let left = rect.left + rect.width / 2 - (maxWidth / 2);
+            left = Math.max(16, Math.min(left, window.innerWidth - maxWidth - 16));
+
+            if (top + 220 > window.innerHeight) {
+                top = Math.max(16, rect.top - 220);
+            }
+
+            popover.style.top = `${top}px`;
+            popover.style.left = `${left}px`;
+
+            const mediaUrl = step.media_url || step.video_url;
+            const mediaHtml = formatMediaHtml(mediaUrl);
+
+            popover.innerHTML = `
+                ${mediaHtml}
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <h4 class="font-bold text-base leading-tight">${step.title}</h4>
+                    <span class="tour-badge-accent text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">${t('live_preview', 'Preview')}</span>
+                </div>
+                <div class="tour-step-desc text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 font-medium">
+                    ${step.description}
+                </div>
+                <div class="flex items-center justify-end pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                    <button id="tour-back-to-editor-btn" class="tour-btn tour-btn-accent text-xs font-bold shadow-md flex items-center gap-1.5">
+                        ${SVG.pencil}
+                        <span>${t('back_to_builder', 'Back to Editor')}</span>
+                    </button>
+                </div>
+            `;
+
+            const exitPreview = () => {
+                if (popover) popover.remove();
+                const mask = document.getElementById('tour-spotlight-mask');
+                if (mask) mask.remove();
+                this.openStepManagerDrawer();
+            };
+
+            const backBtn = document.getElementById('tour-back-to-editor-btn');
+            if (backBtn) backBtn.onclick = exitPreview;
         }
     };
 

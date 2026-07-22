@@ -126,4 +126,5 @@ return [
     'no_steps_to_save' => 'Nessuno step da salvare. Seleziona un elemento prima.',
     'save_error' => 'Errore durante il salvataggio:',
     'unknown_error' => 'sconosciuto',
+    'back_to_builder' => 'Torna all\'Editor',
 ];

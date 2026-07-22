@@ -105,7 +105,7 @@ class TourApiController extends Controller
                     'target_text' => $sData['target_text'] ?? null,
                     'title' => $sData['title'],
                     'description' => $sData['description'],
-                    'video_url' => $sData['video_url'] ?? null,
+                    'video_url' => $this->sanitizeUrl($sData['video_url'] ?? null),
                     'card_size' => $sData['card_size'] ?? 'md',
                     'position' => $sData['position'] ?? 'auto',
                 ]
@@ -164,5 +164,24 @@ class TourApiController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    private function sanitizeUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return null;
+        }
+
+        $trimmed = trim($url);
+
+        if (preg_match('/^https:\/\//i', $trimmed) || str_starts_with($trimmed, '/') || preg_match('/^data:image\//i', $trimmed)) {
+            return $trimmed;
+        }
+
+        if (preg_match('/^http:\/\//i', $trimmed)) {
+            return preg_replace('/^http:\/\//i', 'https://', $trimmed);
+        }
+
+        return null;
     }
 }

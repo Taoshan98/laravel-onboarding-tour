@@ -126,4 +126,5 @@ return [
     'no_steps_to_save' => 'No steps to save. Click an element first.',
     'save_error' => 'Error saving tour:',
     'unknown_error' => 'unknown',
+    'back_to_builder' => 'Back to Editor',
 ];
