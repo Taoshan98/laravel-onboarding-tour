@@ -18,15 +18,6 @@
 @endphp
 
 @if(config('onboarding-tour.enabled', true))
-    <!-- Inline Header Onboarding Tour Trigger Widget -->
-    <div id="onboarding-tour-widget" class="flex items-center gap-2 select-none">
-        @if($tourData && !empty($tourData['steps']))
-            <x-onboarding-tour-trigger />
-        @endif
-
-        <x-onboarding-tour-admin-toggle />
-    </div>
-
     <!-- Inject CSS & JS -->
     <style>
         {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('css/tour-styles.css') !!}

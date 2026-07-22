@@ -31,7 +31,8 @@ class OnboardingTourServiceProvider extends ServiceProvider
         // Register Blade components
         Blade::component('onboarding-tour::components.tour-runner', 'onboarding-tour');
         Blade::component('onboarding-tour::components.tour-trigger', 'onboarding-tour-trigger');
-        Blade::component('onboarding-tour::components.tour-admin-toggle', 'onboarding-tour-admin-toggle');
+        Blade::component('onboarding-tour::components.tour-builder-toggle', 'onboarding-tour-builder-toggle');
+        Blade::component('onboarding-tour::components.tour-builder-toggle', 'onboarding-tour-admin-toggle');
 
         // Register API Routes
         $this->registerRoutes();

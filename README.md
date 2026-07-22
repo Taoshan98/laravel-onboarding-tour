@@ -105,7 +105,7 @@ Place `<x-onboarding-tour />` in your main layout file (e.g. `resources/views/la
 </body>
 ```
 
-This injects the CSS, JS, and tour trigger/admin buttons automatically.
+This injects the CSS, JS, and runtime configuration invisibly (headless).
 
 ### 2. Place trigger buttons in your navigation
 
@@ -115,7 +115,7 @@ This injects the CSS, JS, and tour trigger/admin buttons automatically.
 
 <!-- Admin builder toggle (protect with your own authorization) -->
 @can('manage-tours')
-    <x-onboarding-tour-admin-toggle />
+    <x-onboarding-tour-builder-toggle />
 @endcan
 ```
 
@@ -321,7 +321,7 @@ This copies the views to `resources/views/vendor/onboarding-tour/` where you can
 
 - `components/tour-runner.blade.php` — Main component (CSS/JS injection)
 - `components/tour-trigger.blade.php` — Start tour button
-- `components/tour-admin-toggle.blade.php` — Admin builder toggle button
+- `components/tour-builder-toggle.blade.php` — Admin builder toggle button
 
 ---
 
