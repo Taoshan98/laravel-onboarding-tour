@@ -17,7 +17,6 @@ class TourApiController extends Controller
     {
         $routeName = $request->query('route_name');
         $user = Auth::user();
-        $userId = $user?->id;
 
         $locales = TourCacheService::discoverHostLocales();
         $currentLocale = app()->getLocale();
@@ -33,7 +32,7 @@ class TourApiController extends Controller
             ]);
         }
 
-        $tour = TourCacheService::getTourForRoute($routeName, $userId);
+        $tour = TourCacheService::getTourForRoute($routeName, $user);
 
         return response()->json([
             'tour' => $tour,
@@ -62,7 +61,7 @@ class TourApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tema globale dell\'applicazione aggiornato con successo!',
+            'message' => trans('onboarding-tour::messages.global_theme_saved'),
             'global_theme' => $updatedGlobal,
         ]);
     }
@@ -132,8 +131,8 @@ class TourApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tour salvato con successo',
-            'tour' => TourCacheService::getTourForRoute($data['route_name'], $user?->id),
+            'message' => trans('onboarding-tour::messages.tour_saved_success'),
+            'tour' => TourCacheService::getTourForRoute($data['route_name'], $user),
         ]);
     }
 
@@ -141,7 +140,7 @@ class TourApiController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Utente non autenticato'], 401);
+            return response()->json(['error' => trans('onboarding-tour::messages.unauthenticated')], 401);
         }
 
         $data = $request->validate([
@@ -150,7 +149,8 @@ class TourApiController extends Controller
         ]);
 
         $record = OnboardingTourUser::firstOrNew([
-            'user_id' => $user->id,
+            'user_type' => $user->getMorphClass(),
+            'user_id' => $user->getKey(),
             'tour_id' => $data['tour_id'],
         ]);
 

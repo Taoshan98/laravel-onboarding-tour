@@ -143,4 +143,6 @@ return [
     'save_error' => 'Error saving tour:',
     'unknown_error' => 'unknown',
     'back_to_builder' => 'Back to Editor',
+    'tour_saved_success' => 'Tour saved successfully',
+    'unauthenticated' => 'User not authenticated',
 ];

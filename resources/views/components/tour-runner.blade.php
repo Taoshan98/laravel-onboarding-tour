@@ -1,8 +1,7 @@
 @php
     $routeName = \Illuminate\Support\Facades\Route::currentRouteName() ?? request()->path();
     $user = auth()->user();
-    $userId = $user?->id;
-    $tourData = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getTourForRoute($routeName, $userId);
+    $tourData = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getTourForRoute($routeName, $user);
     $globalTheme = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getGlobalTheme();
 
     $locales = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::discoverHostLocales();

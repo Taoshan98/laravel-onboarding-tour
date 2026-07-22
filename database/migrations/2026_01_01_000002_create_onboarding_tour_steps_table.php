@@ -12,11 +12,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tour_id')->constrained('onboarding_tours')->cascadeOnDelete();
             $table->string('element_selector');
-            $table->string('target_text')->nullable(); // Text anchor fallback
-            $table->string('title');
-            $table->text('description');
-            $table->string('video_url')->nullable();
-            $table->string('position')->default('auto'); // auto, top, bottom, left, right
+            $table->string('target_text')->nullable();
+            $table->json('title');
+            $table->json('description');
+            $table->json('video_url')->nullable();
+            $table->string('card_size')->default('md');
+            $table->string('position')->default('auto');
             $table->integer('sort_order')->default(0);
             $table->timestamps();
         });

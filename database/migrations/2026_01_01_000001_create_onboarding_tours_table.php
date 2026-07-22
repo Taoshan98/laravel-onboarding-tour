@@ -16,6 +16,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->boolean('auto_start')->default(true);
             $table->string('highlight_theme')->default('minimal');
+            $table->json('theme_settings')->nullable();
             $table->timestamps();
         });
     }

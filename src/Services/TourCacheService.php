@@ -66,7 +66,7 @@ class TourCacheService
         return $updated;
     }
 
-    public static function getTourForRoute(string $routeName, ?int $userId = null): ?array
+    public static function getTourForRoute(string $routeName, mixed $user = null): ?array
     {
         if (!config('onboarding-tour.enabled', true)) {
             return null;
@@ -137,11 +137,28 @@ class TourCacheService
             return $s;
         }, $tourData['steps']);
 
-        // Check user completion status
+        // Check user completion status (polymorphic model support)
         $completed = $dismissed = false;
-        if ($userId) {
-            $record = OnboardingTourUser::where('user_id', $userId)->where('tour_id', $tourData['id'])->first();
-            if ($record) { $completed = !is_null($record->completed_at); $dismissed = !is_null($record->dismissed_at); }
+        if ($user) {
+            $userType = is_object($user) && method_exists($user, 'getMorphClass')
+                ? $user->getMorphClass()
+                : (config('auth.providers.users.model') ?? 'App\Models\User');
+
+            $userId = is_object($user) && method_exists($user, 'getKey')
+                ? $user->getKey()
+                : $user;
+
+            if ($userId) {
+                $record = OnboardingTourUser::where('user_type', $userType)
+                    ->where('user_id', $userId)
+                    ->where('tour_id', $tourData['id'])
+                    ->first();
+
+                if ($record) {
+                    $completed = !is_null($record->completed_at);
+                    $dismissed = !is_null($record->dismissed_at);
+                }
+            }
         }
 
         $tourData['user_completed'] = $completed;
