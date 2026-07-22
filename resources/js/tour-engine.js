@@ -383,6 +383,7 @@
 
             const mediaUrl = step.media_url || step.video_url;
             const mediaHtml = formatMediaHtml(mediaUrl);
+            const isLastStep = (index === total - 1);
 
             popover.innerHTML = `
                 ${mediaHtml}
