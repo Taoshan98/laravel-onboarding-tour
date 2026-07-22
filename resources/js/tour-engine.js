@@ -485,8 +485,11 @@
 
             bar.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>Modalità Builder</span>
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="font-bold text-xs text-zinc-200">${t('builder_mode', 'Modalità Builder')}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="tour-manage-steps-btn" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-semibold border border-zinc-700/60 transition-all flex items-center gap-1.5">

@@ -6,6 +6,7 @@ return [
     'start_tour_title' => 'Start Guided Tour',
     'builder_btn' => 'Tour Builder',
     'builder_title' => 'Admin Mode: Edit Tour',
+    'builder_mode' => 'Builder Mode',
 
     // Tour navigation popover
     'prev_btn' => 'Back',

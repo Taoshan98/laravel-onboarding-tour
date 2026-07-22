@@ -6,6 +6,7 @@ return [
     'start_tour_title' => 'Avvia Tour Guidato',
     'builder_btn' => 'Builder Tour',
     'builder_title' => 'Modalità Admin: Modifica Tour',
+    'builder_mode' => 'Modalità Builder',
 
     // Tour navigation popover
     'prev_btn' => 'Indietro',
