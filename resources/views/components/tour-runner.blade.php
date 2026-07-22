@@ -50,11 +50,11 @@
 
     <!-- Inject CSS & JS -->
     <style>
-        {!! file_get_contents(__DIR__ . '/../../css/tour-styles.css') !!}
+        {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('css/tour-styles.css') !!}
     </style>
 
     <script>
-        {!! file_get_contents(__DIR__ . '/../../js/tour-engine.js') !!}
+        {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('js/tour-engine.js') !!}
         document.addEventListener('DOMContentLoaded', function () {
             if (window.LaravelOnboardingTour) {
                 window.LaravelOnboardingTour.init({!! $configJson !!});

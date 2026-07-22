@@ -71,4 +71,24 @@ class OnboardingTourServiceProvider extends ServiceProvider
             Route::post('/delete', [TourApiController::class, 'deleteTour'])->name('onboarding-tour.delete');
         });
     }
+
+    public static function getPackagePath(string $path = ''): string
+    {
+        return dirname(__DIR__) . ($path ? '/' . ltrim($path, '/') : '');
+    }
+
+    public static function getAssetContent(string $relativePath): string
+    {
+        $publishedPath = public_path('vendor/onboarding-tour/' . $relativePath);
+        if (file_exists($publishedPath)) {
+            return file_get_contents($publishedPath) ?: '';
+        }
+
+        $packagePath = self::getPackagePath('resources/' . $relativePath);
+        if (file_exists($packagePath)) {
+            return file_get_contents($packagePath) ?: '';
+        }
+
+        return '';
+    }
 }
