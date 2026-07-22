@@ -28,8 +28,10 @@ class OnboardingTourServiceProvider extends ServiceProvider
         // Load translations
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'onboarding-tour');
 
-        // Register Blade component
+        // Register Blade components
         Blade::component('onboarding-tour::components.tour-runner', 'onboarding-tour');
+        Blade::component('onboarding-tour::components.tour-trigger', 'onboarding-tour-trigger');
+        Blade::component('onboarding-tour::components.tour-admin-toggle', 'onboarding-tour-admin-toggle');
 
         // Register API Routes
         $this->registerRoutes();
