@@ -5,19 +5,11 @@
     $tourData = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getTourForRoute($routeName, $userId);
     $globalTheme = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getGlobalTheme();
 
-    $isAdmin = false;
-    if ($user) {
-        $isAdmin = (isset($user->is_admin) && $user->is_admin)
-            || (isset($user->role) && in_array($user->role, ['admin', 'super-admin']))
-            || (method_exists($user, 'hasRole') && $user->hasRole('admin'))
-            || true; // Enabled for dev
-    }
-
     $configJson = json_encode([
         'route_name' => $routeName,
         'tour' => $tourData,
         'global_theme' => $globalTheme,
-        'is_admin' => $isAdmin,
+        'is_admin' => true,
         'translations' => trans('onboarding-tour::messages'),
     ]);
 @endphp
