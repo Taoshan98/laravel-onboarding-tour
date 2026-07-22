@@ -5,11 +5,15 @@
     $tourData = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getTourForRoute($routeName, $userId);
     $globalTheme = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getGlobalTheme();
 
+    $locales = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::discoverHostLocales();
+
     $configJson = json_encode([
         'route_name' => $routeName,
         'tour' => $tourData,
         'global_theme' => $globalTheme,
         'translations' => trans('onboarding-tour::messages'),
+        'locales' => $locales,
+        'current_locale' => app()->getLocale(),
     ]);
 @endphp
 

@@ -18,6 +18,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Supported Application Locales
+    |--------------------------------------------------------------------------
+    | List of supported locales for step title, description, and media URLs.
+    | Set to null to automatically discover from host application configuration
+    | (config('app.locales'), config('app.available_locales'), etc.).
+    */
+    'locales' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Settings (Redis / Default Cache)
     |--------------------------------------------------------------------------
     */

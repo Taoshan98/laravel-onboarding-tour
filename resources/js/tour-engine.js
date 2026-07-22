@@ -452,6 +452,22 @@
             }
         },
 
+        getLocalizedText: function (data) {
+            if (!data) return '';
+            if (typeof data === 'string') return data;
+            if (typeof data === 'object') {
+                const configuredLocales = (this.config && this.config.locales && this.config.locales.length > 0) ? this.config.locales : ['it', 'en'];
+                const currentLoc = (this.config && this.config.current_locale) ? this.config.current_locale : configuredLocales[0];
+                const fallbackLoc = configuredLocales[0] || 'it';
+                if (data[currentLoc] && data[currentLoc] !== '') return data[currentLoc];
+                if (data[fallbackLoc] && data[fallbackLoc] !== '') return data[fallbackLoc];
+                for (const k in data) {
+                    if (typeof data[k] === 'string' && data[k] !== '') return data[k];
+                }
+            }
+            return '';
+        },
+
         applyThemeVariables: function (settings) {
             const root = document.documentElement;
             const accent = settings.accent_color || '#2563eb';
@@ -666,7 +682,9 @@
 
             popover.setAttribute('role', 'dialog');
             popover.setAttribute('aria-modal', 'true');
-            popover.setAttribute('aria-label', `${step.title} (${index + 1}/${total})`);
+            const stepTitle = this.getLocalizedText(step.title_i18n || step.title);
+            const stepDesc = this.getLocalizedText(step.description_i18n || step.description);
+            popover.setAttribute('aria-label', `${stepTitle} (${index + 1}/${total})`);
 
             const sizeClass = step.card_size || this.themeSettings.card_size || 'md';
             popover.className = `tour-popover-card card-${this.themeSettings.card_style || 'auto'} size-${sizeClass}`;
@@ -689,18 +707,19 @@
             popover.style.top = `${top}px`;
             popover.style.left = `${left}px`;
 
-            const mediaUrl = step.media_url || step.video_url;
+            const rawMedia = step.media_url_i18n || step.video_url_i18n || step.media_url || step.video_url;
+            const mediaUrl = this.getLocalizedText(rawMedia) || (typeof step.media_url === 'string' ? step.media_url : (typeof step.video_url === 'string' ? step.video_url : ''));
             const mediaHtml = formatMediaHtml(mediaUrl);
             const isLastStep = (index === total - 1);
 
             popover.innerHTML = `
                 ${mediaHtml}
                 <div class="flex items-center justify-between gap-2 mb-2">
-                    <h4 class="font-bold text-base leading-tight">${step.title}</h4>
+                    <h4 class="font-bold text-base leading-tight">${stepTitle}</h4>
                     <span class="tour-badge-accent text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">${index + 1}/${total}</span>
                 </div>
                 <div class="tour-step-desc text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 font-medium" aria-live="polite">
-                    ${step.description}
+                    ${stepDesc}
                 </div>
                 <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
                     <div class="flex items-center gap-2">
@@ -924,7 +943,9 @@
                     `;
                 } else {
                     stepsListHtml = this.draftSteps.map((step, idx) => {
-                        const hasMedia = !!(step.video_url || step.media_url);
+                        const rawMedia = step.media_url_i18n || step.video_url_i18n || step.media_url || step.video_url;
+                        const hasMedia = !!(this.getLocalizedText(rawMedia) || step.video_url || step.media_url);
+                        const stepTitle = this.getLocalizedText(step.title_i18n || step.title) || (`Step #${idx + 1}`);
                         return `
                         <div class="tour-drawer-step-item tour-card-box flex items-center justify-between gap-2.5 px-3 py-2.5 hover:border-blue-500/50 transition-all group" draggable="true" data-idx="${idx}">
                             <div class="flex items-center gap-2 flex-shrink-0">
@@ -937,7 +958,7 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <h5 class="text-xs font-bold text-zinc-800 dark:text-zinc-100 truncate">${step.title}</h5>
+                                    <h5 class="text-xs font-bold text-zinc-800 dark:text-zinc-100 truncate">${stepTitle}</h5>
                                     ${hasMedia ? `<span class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-purple-500 bg-purple-500/10 dark:bg-purple-500/20 px-1.5 py-0.5 rounded-full flex-shrink-0" title="${t('media_included', 'Media Included')}">${SVG.media}</span>` : ''}
                                 </div>
                                 <p class="text-[10px] font-mono text-zinc-400 truncate leading-tight mt-0.5">${step.element_selector}</p>
@@ -1808,6 +1829,16 @@
             const textContent = existingStep ? existingStep.target_text : (targetEl.innerText || targetEl.textContent || '').trim().substring(0, 30);
             const breadcrumbs = this.getHierarchyBreadcrumbs(targetEl);
 
+            const configuredLocales = (this.config.locales && this.config.locales.length > 0) ? this.config.locales : ['it', 'en'];
+            let activeModalLocale = configuredLocales[0];
+
+            const getLocVal = (obj, loc) => {
+                if (!obj) return '';
+                if (typeof obj === 'string') return loc === configuredLocales[0] ? obj : '';
+                if (typeof obj === 'object') return obj[loc] || '';
+                return '';
+            };
+
             modal = document.createElement('div');
             modal.id = 'tour-builder-modal';
             modal.className = 'tour-builder-modal p-4 bg-black/60 backdrop-blur-sm animate-fade-in';
@@ -1818,7 +1849,30 @@
                 </span>
             `).join(' <span class="text-zinc-600">/</span> ');
 
-            const existingMedia = existingStep ? (existingStep.media_url || existingStep.video_url || '') : '';
+            const langTabsHtml = configuredLocales.map(loc => `
+                <button type="button" class="tour-lang-tab-pill ${loc === activeModalLocale ? 'active' : ''}" data-loc="${loc}">
+                    <span class="uppercase font-bold">${loc.toUpperCase()}</span>
+                </button>
+            `).join('');
+
+            const langPanelsHtml = configuredLocales.map(loc => `
+                <div class="tour-lang-panel ${loc === activeModalLocale ? '' : 'hidden'}" data-loc-panel="${loc}">
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <label class="tour-label">${t('step_title_label', 'Step Title')} (${loc.toUpperCase()})</label>
+                            <input type="text" data-field="title" data-loc="${loc}" value="${getLocVal(existingStep?.title_i18n || existingStep?.title, loc)}" placeholder="${t('step_title_label', 'Title')} in ${loc.toUpperCase()}" class="tour-input" />
+                        </div>
+                        <div>
+                            <label class="tour-label">${t('step_content_label', 'Description / Content')} (${loc.toUpperCase()})</label>
+                            <textarea data-field="description" data-loc="${loc}" rows="3" placeholder="${t('step_content_label', 'Description')} in ${loc.toUpperCase()}" class="tour-textarea">${getLocVal(existingStep?.description_i18n || existingStep?.description, loc)}</textarea>
+                        </div>
+                        <div>
+                            <label class="tour-label">${t('media_url_label', 'Media URL')} (${loc.toUpperCase()})</label>
+                            <input type="text" data-field="video_url" data-loc="${loc}" value="${getLocVal(existingStep?.video_url_i18n || existingStep?.video_url || existingStep?.media_url, loc)}" placeholder="https://..." class="tour-input" />
+                        </div>
+                    </div>
+                </div>
+            `).join('');
 
             modal.innerHTML = `
                 <div class="tour-modal-card">
@@ -1832,14 +1886,10 @@
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 14px;">
-                        <div>
-                            <label class="tour-label">${t('step_target_label', 'CSS Selector (Target Element)')}</label>
-                            <input type="text" id="step-selector-input" value="${selector}" class="tour-input" style="font-family: monospace; color: var(--tour-text-main); font-weight: 700;" />
-                        </div>
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
                             <div>
-                                <label class="tour-label">${t('step_title_label', 'Step Title')}</label>
-                                <input type="text" id="step-title-input" value="${existingStep ? existingStep.title : ''}" placeholder="E.g. Table filters" class="tour-input" />
+                                <label class="tour-label">${t('step_target_label', 'CSS Selector (Target Element)')}</label>
+                                <input type="text" id="step-selector-input" value="${selector}" class="tour-input" style="font-family: monospace; color: var(--tour-text-main); font-weight: 700;" />
                             </div>
                             <div>
                                 <label class="tour-label">${t('card_size_label', 'Card Size')}</label>
@@ -1851,15 +1901,19 @@
                                 </select>
                             </div>
                         </div>
+
                         <div>
-                            <label class="tour-label">${t('step_content_label', 'Description / Content')}</label>
-                            <textarea id="step-desc-input" rows="3" placeholder="Explain what this element does..." class="tour-textarea">${existingStep ? existingStep.description : ''}</textarea>
+                            <label class="tour-label" style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; margin-bottom: 6px;">Language / Lingua</label>
+                            <div class="tour-lang-tab-container">
+                                ${langTabsHtml}
+                            </div>
                         </div>
+
                         <div>
-                            <label class="tour-label">${t('media_url_label', 'Media URL (Image / YouTube / MP4)')}</label>
-                            <input type="text" id="step-video-input" value="${existingMedia}" placeholder="E.g. https://.../image.png or YouTube URL" class="tour-input" />
-                            <span style="font-size: 10px; opacity: 0.7; margin-top: 4px; display: block;">${t('media_help_text', 'Supports images (.png, .jpg, .gif, .webp) and videos (YouTube, Vimeo, MP4).')}</span>
+                            ${langPanelsHtml}
                         </div>
+
+                        <span style="font-size: 10px; opacity: 0.7; margin-top: -4px; display: block;">${t('media_help_text', 'Supports images (.png, .jpg, .gif, .webp) and videos (YouTube, Vimeo, MP4).')}</span>
                     </div>
 
                     <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--tour-border-color);">
@@ -1870,6 +1924,18 @@
             `;
 
             document.body.appendChild(modal);
+
+            modal.querySelectorAll('.tour-lang-tab-pill').forEach(btn => {
+                btn.onclick = () => {
+                    const selectedLoc = btn.getAttribute('data-loc');
+                    modal.querySelectorAll('.tour-lang-tab-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    modal.querySelectorAll('.tour-lang-panel').forEach(panel => {
+                        panel.classList.toggle('hidden', panel.getAttribute('data-loc-panel') !== selectedLoc);
+                    });
+                };
+            });
 
             modal.querySelectorAll('.tour-breadcrumb-chip').forEach(chip => {
                 chip.onclick = () => {
@@ -1888,17 +1954,34 @@
                 modal.remove();
                 this.removeInspectorOutline();
             };
+
             document.getElementById('modal-add-step-btn').onclick = () => {
-                const mediaVal = document.getElementById('step-video-input').value || null;
                 const sizeVal = document.getElementById('step-card-size-input').value || 'md';
+
+                const titleObj = {};
+                const descObj = {};
+                const mediaObj = {};
+
+                configuredLocales.forEach(loc => {
+                    const tVal = modal.querySelector(`[data-field="title"][data-loc="${loc}"]`)?.value.trim() || '';
+                    const dVal = modal.querySelector(`[data-field="description"][data-loc="${loc}"]`)?.value.trim() || '';
+                    const mVal = modal.querySelector(`[data-field="video_url"][data-loc="${loc}"]`)?.value.trim() || '';
+
+                    titleObj[loc] = tVal;
+                    descObj[loc] = dVal;
+                    mediaObj[loc] = mVal;
+                });
 
                 const stepObj = {
                     element_selector: document.getElementById('step-selector-input').value,
                     target_text: textContent,
-                    title: document.getElementById('step-title-input').value || 'Step',
-                    description: document.getElementById('step-desc-input').value || '',
-                    video_url: mediaVal,
-                    media_url: mediaVal,
+                    title: titleObj,
+                    description: descObj,
+                    video_url: mediaObj,
+                    media_url: mediaObj,
+                    title_i18n: titleObj,
+                    description_i18n: descObj,
+                    video_url_i18n: mediaObj,
                     card_size: sizeVal,
                     position: 'auto',
                     sort_order: isEditing ? existingStep.sort_order : this.draftSteps.length + 1
@@ -2029,17 +2112,20 @@
             popover.style.top = `${top}px`;
             popover.style.left = `${left}px`;
 
-            const mediaUrl = step.media_url || step.video_url;
+            const rawMedia = step.media_url_i18n || step.video_url_i18n || step.media_url || step.video_url;
+            const mediaUrl = this.getLocalizedText(rawMedia) || (typeof step.media_url === 'string' ? step.media_url : (typeof step.video_url === 'string' ? step.video_url : ''));
             const mediaHtml = formatMediaHtml(mediaUrl);
+            const stepTitle = this.getLocalizedText(step.title_i18n || step.title);
+            const stepDesc = this.getLocalizedText(step.description_i18n || step.description);
 
             popover.innerHTML = `
                 ${mediaHtml}
                 <div class="flex items-center justify-between gap-2 mb-2">
-                    <h4 class="font-bold text-base leading-tight">${step.title}</h4>
+                    <h4 class="font-bold text-base leading-tight">${stepTitle}</h4>
                     <span class="tour-badge-accent text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">${t('live_preview', 'Preview')}</span>
                 </div>
                 <div class="tour-step-desc text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 font-medium">
-                    ${step.description}
+                    ${stepDesc}
                 </div>
                 <div class="flex items-center justify-end pt-2 border-t border-zinc-100 dark:border-zinc-800">
                     <button id="tour-back-to-editor-btn" class="tour-btn tour-btn-accent text-xs font-bold shadow-md flex items-center gap-1.5">
@@ -2115,7 +2201,9 @@
                             route_name: currentRoute,
                             tour: data.tour,
                             global_theme: data.global_theme,
-                            translations: data.translations || (window.LaravelOnboardingTour.config ? window.LaravelOnboardingTour.config.translations : null)
+                            translations: data.translations || (window.LaravelOnboardingTour.config ? window.LaravelOnboardingTour.config.translations : null),
+                            locales: data.locales,
+                            current_locale: data.current_locale
                         });
                     }
                 })

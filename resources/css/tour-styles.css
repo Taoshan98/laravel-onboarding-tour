@@ -985,3 +985,44 @@
     outline: 2px solid #2563eb !important;
     outline-offset: 2px !important;
 }
+
+/* Language Switcher Tabs & Panels in Step Builder Modal */
+.tour-lang-tab-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.tour-lang-tab-pill {
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: var(--tour-bg-elevated);
+    color: var(--tour-text-muted, #94a3b8);
+    border: 1px solid var(--tour-border-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tour-lang-tab-pill:hover {
+    color: var(--tour-text-main);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.tour-lang-tab-pill.active {
+    background: var(--tour-accent-color, #2563eb);
+    color: #ffffff;
+    border-color: var(--tour-accent-color, #2563eb);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.tour-lang-panel {
+    transition: opacity 0.15s ease;
+}
+
+.tour-lang-panel.hidden {
+    display: none !important;
+}

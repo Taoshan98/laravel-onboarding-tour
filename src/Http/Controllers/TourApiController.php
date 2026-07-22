@@ -19,11 +19,16 @@ class TourApiController extends Controller
         $user = Auth::user();
         $userId = $user?->id;
 
+        $locales = $this->discoverHostLocales();
+        $currentLocale = app()->getLocale();
+
         if (!$routeName) {
             return response()->json([
                 'tour' => null,
                 'global_theme' => TourCacheService::getGlobalTheme(),
                 'translations' => trans('onboarding-tour::messages'),
+                'locales' => array_values($locales),
+                'current_locale' => $currentLocale,
             ]);
         }
 
@@ -33,6 +38,8 @@ class TourApiController extends Controller
             'tour' => $tour,
             'global_theme' => TourCacheService::getGlobalTheme(),
             'translations' => trans('onboarding-tour::messages'),
+            'locales' => array_values($locales),
+            'current_locale' => $currentLocale,
         ]);
     }
 
@@ -72,9 +79,9 @@ class TourApiController extends Controller
             'steps' => 'required|array',
             'steps.*.element_selector' => 'required|string',
             'steps.*.target_text' => 'nullable|string',
-            'steps.*.title' => 'required|string|max:255',
-            'steps.*.description' => 'required|string',
-            'steps.*.video_url' => 'nullable|string',
+            'steps.*.title' => 'required',
+            'steps.*.description' => 'required',
+            'steps.*.video_url' => 'nullable',
             'steps.*.card_size' => 'nullable|string',
             'steps.*.position' => 'nullable|string',
             'steps.*.sort_order' => 'nullable|integer',
@@ -166,7 +173,25 @@ class TourApiController extends Controller
         return response()->json(['success' => true]);
     }
 
-    private function sanitizeUrl(?string $url): ?string
+    private function discoverHostLocales(): array
+    {
+        return TourCacheService::discoverHostLocales();
+    }
+
+    private function sanitizeUrl(array|string|null $url): array|string|null
+    {
+        if (is_array($url)) {
+            $sanitized = [];
+            foreach ($url as $loc => $u) {
+                $sanitized[$loc] = is_string($u) ? $this->sanitizeSingleUrl($u) : null;
+            }
+            return $sanitized;
+        }
+
+        return is_string($url) ? $this->sanitizeSingleUrl($url) : null;
+    }
+
+    private function sanitizeSingleUrl(?string $url): ?string
     {
         if (!$url) {
             return null;
