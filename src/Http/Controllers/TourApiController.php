@@ -28,6 +28,7 @@ class TourApiController extends Controller
                 'global_theme' => TourCacheService::getGlobalTheme(),
                 'translations' => trans('onboarding-tour::messages'),
                 'locales' => array_values($locales),
+                'default_locale' => config('app.locale', 'en'),
                 'current_locale' => $currentLocale,
             ]);
         }
@@ -39,6 +40,7 @@ class TourApiController extends Controller
             'global_theme' => TourCacheService::getGlobalTheme(),
             'translations' => trans('onboarding-tour::messages'),
             'locales' => array_values($locales),
+            'default_locale' => config('app.locale', 'en'),
             'current_locale' => $currentLocale,
         ]);
     }

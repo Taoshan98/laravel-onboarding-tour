@@ -641,7 +641,9 @@
             const selector = existing ? existing.element_selector : this.generateSelector(targetEl);
             const textContent = existing ? existing.target_text : (targetEl.innerText||targetEl.textContent||'').trim().substring(0,30);
             const breadcrumbs = this.getHierarchyBreadcrumbs(targetEl);
-            const locales = this.config.locales?.length ? this.config.locales : ['it','en'];
+            const defaultLoc = this.config.default_locale || 'en';
+            const rawLocales = this.config.locales?.length ? this.config.locales : ['it','en'];
+            const locales = [defaultLoc, ...rawLocales.filter(l => l !== defaultLoc)];
             const getLocVal = (obj,loc) => { if (!obj) return ''; if (typeof obj==='string') return loc===locales[0]?obj:''; return obj?.[loc]||''; };
 
             const modal = document.createElement('div');
@@ -649,7 +651,7 @@
             modal.className = 'tour-modal-overlay';
 
             const crumbsHtml = breadcrumbs.map((b,i) => `<span class="tour-breadcrumb-chip ${i===breadcrumbs.length-1?'active':''}" data-crumb-idx="${i}">${b.label}</span>`).join(' <span class="text-zinc-600">/</span> ');
-            const langTabs = locales.map(loc => `<button type="button" class="tour-lang-tab-pill ${loc===locales[0]?'active':''}" data-loc="${loc}"><span class="uppercase font-bold">${loc.toUpperCase()}</span></button>`).join('');
+            const langTabs = locales.map(loc => `<button type="button" class="tour-lang-tab-pill ${loc===defaultLoc?'active':''}" data-loc="${loc}"><span class="uppercase font-bold">${loc.toUpperCase()}</span>${loc===defaultLoc ? '<span class="tour-lang-default-badge">★</span>' : ''}</button>`).join('');
             const langPanels = locales.map(loc => `<div class="tour-lang-panel ${loc===locales[0]?'':'hidden'}" data-loc-panel="${loc}"><div style="display:flex;flex-direction:column;gap:12px"><div><label class="tour-label">${t('step_title_label','Title')} (${loc.toUpperCase()})</label><input type="text" data-field="title" data-loc="${loc}" value="${getLocVal(existing?.title_i18n||existing?.title,loc)}" placeholder="${t('step_title_label','Title')} ${loc.toUpperCase()}" class="tour-input"/></div><div><label class="tour-label">${t('step_content_label','Description')} (${loc.toUpperCase()})</label><textarea data-field="description" data-loc="${loc}" rows="3" placeholder="${t('step_content_label','Description')} ${loc.toUpperCase()}" class="tour-textarea">${getLocVal(existing?.description_i18n||existing?.description,loc)}</textarea></div><div><label class="tour-label">${t('media_url_label','Media URL')} (${loc.toUpperCase()})</label><input type="text" data-field="video_url" data-loc="${loc}" value="${getLocVal(existing?.video_url_i18n||existing?.video_url||existing?.media_url,loc)}" placeholder="https://..." class="tour-input"/></div></div></div>`).join('');
             const sizeOpt = (v,l) => `<option value="${v}" ${existing?.card_size===v||(!existing?.card_size&&v==='md')?'selected':''}>${l}</option>`;
 

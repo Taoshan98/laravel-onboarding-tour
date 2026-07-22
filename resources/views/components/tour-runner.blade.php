@@ -13,6 +13,7 @@
         'global_theme' => $globalTheme,
         'translations' => trans('onboarding-tour::messages'),
         'locales' => $locales,
+        'default_locale' => config('app.locale', 'en'),
         'current_locale' => app()->getLocale(),
     ]);
 @endphp
