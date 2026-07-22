@@ -4,13 +4,15 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/taoshan98/laravel-onboarding-tour.svg?style=flat-square)](https://packagist.org/packages/taoshan98/laravel-onboarding-tour)
 [![License](https://img.shields.io/packagist/l/taoshan98/laravel-onboarding-tour.svg?style=flat-square)](LICENSE)
 
-An interactive, visual onboarding tour package for Laravel applications. Features an in-browser live visual builder, customizable popover cards, expandable media lightboxes, Redis/Cache optimization, strict security URL sanitization, and Livewire v3 SPA support.
+An interactive, visual onboarding tour package for Laravel applications. Features an in-browser live visual builder, customizable popover cards, expandable media lightboxes, keyboard navigation & shortcuts palette, host-aligned multi-language (i18n) support, Redis/Cache optimization, strict security URL sanitization, and Livewire v3 SPA support.
 
 ---
 
 ## 🚀 Key Features & Highlights
 
 - **Visual Inspector & Live Tour Builder**: Point and click on any DOM element on your page to create, edit, and reorder guided onboarding steps.
+- **Host-Aligned Multi-Language (i18n) Support**: Automatically discovers host application locales (`lang/` subdirectories, `.json` translation files, and `app.locales`). Provides tabbed language editing (`[ IT ]`, `[ EN ]`, `[ DE ]`, `[ FR ]`, etc.) in the builder to define N Titles, N Descriptions, and N Media URLs per language with automatic locale resolution and fallback.
+- **Keyboard Navigation & Interactive Shortcuts Palette (`⌨️`)**: Full hotkey support (`→`, `←`, `Space`, `Enter`, `ESC`, `?`, `B`, `S`, `T`, `Ctrl+S`), ARIA focus trapping (`Tab` / `Shift+Tab`), auto-focusing, and an interactive glassmorphism shortcuts modal.
 - **Standalone Light & Dark Mode System**: Automatically aligns with your host application's theme (`.dark`, `[data-theme="dark"]`), independent of OS preferences.
 - **Admin UI Color Isolation**: The builder toolbar, side drawer, inspector selector outline, and modals use a fixed, minimal primary blue (`#2563eb`), ensuring theme customization never bleeds into the admin interface.
 - **Instant Live Single-Step Preview**: Click the Eye (`Test`) icon on any step to instantly preview it on the real page. Automatically closes the drawer and includes a 1-click **`[ ✏️ Back to Editor ]`** button.
@@ -90,6 +92,35 @@ Place the trigger buttons anywhere in your navigation bar or header:
 
 ---
 
+## ⌨️ Keyboard Shortcuts
+
+| Hotkey | Action | Context | Description |
+| :--- | :--- | :--- | :--- |
+| `→` / `L` / `Space` | **Next Step** | Active Tour | Advances to the next step |
+| `←` / `H` | **Previous Step** | Active Tour | Returns to the previous step |
+| `Enter` | **Finish / Complete** | Active Tour | Completes the tour |
+| `ESC` | **Dismiss / Exit** | Active Tour / Modal | Closes/dismisses the active tour or modal |
+| `?` / `Shift + /` | **Toggle Shortcuts** | Global | Opens/closes the Interactive Shortcuts Palette Modal |
+| `B` | **Toggle Builder** | Admin | Enables/disables Builder Mode |
+| `S` | **Steps Drawer** | Admin Builder | Opens the Steps Manager drawer |
+| `T` | **Theme Drawer** | Admin Builder | Opens the Theme Customization drawer |
+| `Ctrl + S` / `Cmd + S` | **Save Tour** | Admin Builder | Saves the current tour configuration |
+
+---
+
+## 🌐 Multi-Language (i18n) Support
+
+The package automatically discovers all locales configured in your host application (scanned from `lang/` directories, `.json` files, and `app.locales`).
+
+When adding or editing steps in the Builder Modal, click the **Language Tabs** (`[ IT ]`, `[ EN ]`, `[ DE ]`, `[ FR ]`, etc.) to define:
+- **N Titles** per step
+- **N Descriptions** per step
+- **N Media / Video URLs** per step
+
+When users view a tour, the content is automatically resolved to their active locale (`app()->getLocale()`) with fallback handling.
+
+---
+
 ## ⚙️ Configuration (`config/onboarding-tour.php`)
 
 ```php
@@ -119,6 +150,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Supported Locales (Optional explicit override)
+    |--------------------------------------------------------------------------
+    */
+    'locales' => ['it', 'en'], // Auto-discovered if omitted
+
+    /*
+    |--------------------------------------------------------------------------
     | Global Theme Defaults
     |--------------------------------------------------------------------------
     */
@@ -134,15 +172,6 @@ return [
     ],
 ];
 ```
-
----
-
-## 📚 Technical Specifications & Architecture Docs
-
-Detailed technical specifications for planned extensions are available in the `docs/` directory:
-
-- ⌨️ **[Keyboard Navigation & Accessibility Spec](docs/FEATURE_KEYBOARD_ACCESSIBILITY.md)**: Specifications for hotkeys, ARIA focus trapping, and the interactive Shortcuts Palette Modal (`?`).
-- 🌐 **[Host-Aligned Multi-Language Spec](docs/FEATURE_MULTILANGUAGE_CONTENT.md)**: Architecture for N Titles, N Descriptions, and N Media URLs per locale configured in your host application.
 
 ---
 
