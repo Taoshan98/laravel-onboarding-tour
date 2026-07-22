@@ -1361,6 +1361,7 @@
         },
 
         openStepBuilderModal: function (targetEl, editingIndex = null) {
+            this.removeInspectorOutline();
             let modal = document.getElementById('tour-builder-modal');
             if (modal) modal.remove();
 
@@ -1373,7 +1374,7 @@
 
             modal = document.createElement('div');
             modal.id = 'tour-builder-modal';
-            modal.className = 'fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in';
+            modal.className = 'fixed inset-0 z-[100010] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in';
 
             const breadcrumbsHtml = breadcrumbs.map((b, i) => `
                 <span class="tour-breadcrumb-chip ${i === breadcrumbs.length - 1 ? 'active' : ''}" data-crumb-idx="${i}">
@@ -1447,7 +1448,10 @@
                 };
             });
 
-            document.getElementById('modal-cancel-btn').onclick = () => modal.remove();
+            document.getElementById('modal-cancel-btn').onclick = () => {
+                modal.remove();
+                this.removeInspectorOutline();
+            };
             document.getElementById('modal-add-step-btn').onclick = () => {
                 const mediaVal = document.getElementById('step-video-input').value || null;
                 const sizeVal = document.getElementById('step-card-size-input').value || 'md';
@@ -1473,6 +1477,7 @@
                 }
 
                 modal.remove();
+                this.removeInspectorOutline();
                 this.renderInspectorBar();
             };
         },

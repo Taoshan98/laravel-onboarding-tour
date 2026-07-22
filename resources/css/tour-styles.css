@@ -223,7 +223,7 @@
 .tour-inspector-outline {
     position: absolute;
     pointer-events: none;
-    z-index: 99980;
+    z-index: 99970;
     border-radius: 8px;
     transition: all 0.1s ease-out;
     border: 2px solid var(--tour-accent-color, #2563eb);
