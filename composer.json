@@ -1,0 +1,30 @@
+{
+    "name": "taoshan98/laravel-onboarding-tour",
+    "description": "Interactive, highly configurable visual onboarding tour package for Laravel applications.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Taoshan",
+            "email": "info@taoshan.dev"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/cache": "^10.0|^11.0|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Taoshan\\LaravelOnboardingTour\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Taoshan\\LaravelOnboardingTour\\OnboardingTourServiceProvider"
+            ]
+        }
+    }
+}
