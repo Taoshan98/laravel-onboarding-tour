@@ -25,13 +25,16 @@ class OnboardingTourServiceProvider extends ServiceProvider
         // Load views
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'onboarding-tour');
 
+        // Load translations
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'onboarding-tour');
+
         // Register Blade component
         Blade::component('onboarding-tour::components.tour-runner', 'onboarding-tour');
 
         // Register API Routes
         $this->registerRoutes();
 
-        // Publishing assets & config
+        // Publishing assets & config & lang
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/onboarding-tour.php' => config_path('onboarding-tour.php'),
@@ -40,6 +43,10 @@ class OnboardingTourServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../resources/views' => resource_path('views/vendor/onboarding-tour'),
             ], 'onboarding-tour-views');
+
+            $this->publishes([
+                __DIR__ . '/../resources/lang' => $this->app->langPath('vendor/onboarding-tour'),
+            ], 'onboarding-tour-lang');
 
             $this->publishes([
                 __DIR__ . '/../resources/js' => public_path('vendor/onboarding-tour/js'),

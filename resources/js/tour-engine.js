@@ -19,6 +19,14 @@
         expand: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>`
     };
 
+    function t(key, fallback) {
+        if (window.LaravelOnboardingTour && window.LaravelOnboardingTour.config && window.LaravelOnboardingTour.config.translations) {
+            const val = window.LaravelOnboardingTour.config.translations[key];
+            if (val) return val;
+        }
+        return fallback !== undefined ? fallback : key;
+    }
+
     function safeAttrSelector(attrName, attrVal) {
         const escapedAttr = attrName.replace(/:/g, '\\3a ');
         const escapedVal = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(attrVal) : attrVal.replace(/"/g, '\\"');
@@ -43,9 +51,9 @@
         const cleanUrl = url.trim();
 
         const expandBtnHtml = `
-            <button type="button" class="tour-media-expand-btn" title="Espandi a schermo intero" data-media-url="${cleanUrl}">
+            <button type="button" class="tour-media-expand-btn" title="${t('expand_media', 'Espandi a schermo intero')}" data-media-url="${cleanUrl}">
                 ${SVG.expand}
-                <span>Espandi</span>
+                <span>${t('expand_media', 'Espandi')}</span>
             </button>
         `;
 
@@ -190,8 +198,8 @@
                     <h3 class="text-base font-bold mb-2">${title}</h3>
                     <p class="text-xs text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">${message}</p>
                     <div class="flex items-center justify-end gap-2">
-                        <button id="tour-confirm-cancel" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">Annulla</button>
-                        <button id="tour-confirm-ok" class="px-5 py-2 rounded-xl tour-btn-accent text-xs font-bold shadow-lg">Conferma</button>
+                        <button id="tour-confirm-cancel" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">${t('cancel', 'Annulla')}</button>
+                        <button id="tour-confirm-ok" class="px-5 py-2 rounded-xl tour-btn-accent text-xs font-bold shadow-lg">${t('confirm', 'Conferma')}</button>
                     </div>
                 </div>
             `;
@@ -387,12 +395,12 @@
                 </div>
                 <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
                     <button id="tour-dismiss-btn" class="text-[11px] font-semibold text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
-                        Non mostrare più
+                        ${t('dismiss_btn', 'Non mostrare più')}
                     </button>
                     <div class="flex items-center gap-1.5">
-                        ${index > 0 ? `<button id="tour-prev-btn" class="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">Indietro</button>` : ''}
+                        ${index > 0 ? `<button id="tour-prev-btn" class="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">${t('prev_btn', 'Indietro')}</button>` : ''}
                         <button id="tour-next-btn" class="px-4 py-1.5 rounded-lg tour-btn-accent text-xs font-bold shadow-md">
-                            ${index === total - 1 ? 'Fine' : 'Avanti'}
+                            ${isLastStep ? t('finish_btn', 'Concludi') : t('next_btn', 'Avanti')}
                         </button>
                     </div>
                 </div>
@@ -482,14 +490,14 @@
                 <div class="flex items-center gap-2">
                     <button id="tour-manage-steps-btn" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-semibold border border-zinc-700/60 transition-all flex items-center gap-1.5">
                         ${SVG.list}
-                        <span>Gestisci step (${this.draftSteps.length})</span>
+                        <span>${t('manage_steps', 'Gestisci step')}</span>
                     </button>
                     <button id="tour-theme-toggle-btn" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-semibold border border-zinc-700/60 transition-all flex items-center gap-1.5">
                         ${SVG.palette}
-                        <span>Grafica & Tema</span>
+                        <span>${t('theme', 'Tema')}</span>
                     </button>
-                    <button id="tour-save-all-btn" class="px-3.5 py-1.5 tour-btn-accent rounded-xl font-semibold text-xs shadow-md transition-all">Salva tour</button>
-                    <button id="tour-close-inspector-btn" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition-all">Esci</button>
+                    <button id="tour-save-all-btn" class="px-3.5 py-1.5 tour-btn-accent rounded-xl font-semibold text-xs shadow-md transition-all">${t('save_tour', 'Salva tour')}</button>
+                    <button id="tour-close-inspector-btn" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-semibold transition-all">${t('exit', 'Esci')}</button>
                 </div>
             `;
 
@@ -766,8 +774,8 @@
                 <!-- Header with Tabs -->
                 <div class="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                     <div>
-                        <h3 class="text-base font-bold">Gestione & Personalizzazione</h3>
-                        <p class="text-xs text-zinc-400 mt-0.5">Configurazione tour per questa vista</p>
+                        <h3 class="text-base font-bold">${t('drawer_title', 'Editor Tour Onboarding')}</h3>
+                        <p class="text-xs text-zinc-400 mt-0.5">${t('drawer_subtitle', 'Configura passaggi e aspetto visivo')}</p>
                     </div>
                     <button id="tour-drawer-close-btn" class="p-2 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                         ${SVG.close}
@@ -778,11 +786,11 @@
                 <div class="flex items-center gap-2 px-5 py-2.5 bg-zinc-50 dark:bg-zinc-800/40 border-b border-zinc-200 dark:border-zinc-800">
                     <button id="tab-btn-steps" class="tour-tab-btn flex-1 justify-center ${isStepsTab ? 'active' : ''}">
                         ${SVG.list}
-                        <span>Step del tour (${this.draftSteps.length})</span>
+                        <span>${t('manage_steps', 'Gestisci step')} (${this.draftSteps.length})</span>
                     </button>
                     <button id="tab-btn-theme" class="tour-tab-btn flex-1 justify-center ${!isStepsTab ? 'active' : ''}">
                         ${SVG.palette}
-                        <span>Grafica & Tema</span>
+                        <span>${t('theme', 'Tema')}</span>
                     </button>
                 </div>
 
@@ -794,7 +802,7 @@
                     </button>
                     ${this.currentTour ? `
                         <button id="tour-drawer-delete-tour-btn" class="w-full py-2.5 rounded-xl border border-red-500/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 text-xs font-semibold transition-all">
-                            Elimina intero tour
+                            ${t('delete_tour', 'Elimina intero tour')}
                         </button>
                     ` : ''}
                 </div>
@@ -1417,8 +1425,8 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                        <button id="modal-cancel-btn" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">Annulla</button>
-                        <button id="modal-add-step-btn" class="px-5 py-2 rounded-xl tour-btn-accent text-xs font-bold shadow-lg">${isEditing ? 'Salva modifiche' : 'Aggiungi step'}</button>
+                        <button id="modal-cancel-btn" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">${t('cancel', 'Annulla')}</button>
+                        <button id="modal-add-step-btn" class="px-5 py-2 rounded-xl tour-btn-accent text-xs font-bold shadow-lg">${isEditing ? t('save_changes', 'Salva modifiche') : t('add_step', 'Aggiungi step')}</button>
                     </div>
                 </div>
             `;

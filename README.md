@@ -34,10 +34,11 @@ Run the database migrations:
 php artisan migrate
 ```
 
-Optionally publish the configuration file:
+Optionally publish the configuration file or translations:
 
 ```bash
 php artisan vendor:publish --tag="onboarding-tour-config"
+php artisan vendor:publish --tag="onboarding-tour-lang"
 ```
 
 ---
