@@ -19,7 +19,7 @@ class TourApiController extends Controller
         $user = Auth::user();
         $userId = $user?->id;
 
-        $locales = $this->discoverHostLocales();
+        $locales = TourCacheService::discoverHostLocales();
         $currentLocale = app()->getLocale();
 
         if (!$routeName) {
@@ -173,40 +173,15 @@ class TourApiController extends Controller
         return response()->json(['success' => true]);
     }
 
-    private function discoverHostLocales(): array
-    {
-        return TourCacheService::discoverHostLocales();
-    }
-
     private function sanitizeUrl(array|string|null $url): array|string|null
     {
         if (is_array($url)) {
-            $sanitized = [];
-            foreach ($url as $loc => $u) {
-                $sanitized[$loc] = is_string($u) ? $this->sanitizeSingleUrl($u) : null;
-            }
-            return $sanitized;
+            return array_map(fn($u) => is_string($u) ? $this->sanitizeUrl($u) : null, $url);
         }
 
-        return is_string($url) ? $this->sanitizeSingleUrl($url) : null;
-    }
-
-    private function sanitizeSingleUrl(?string $url): ?string
-    {
-        if (!$url) {
-            return null;
-        }
-
-        $trimmed = trim($url);
-
-        if (preg_match('/^https:\/\//i', $trimmed) || str_starts_with($trimmed, '/') || preg_match('/^data:image\//i', $trimmed)) {
-            return $trimmed;
-        }
-
-        if (preg_match('/^http:\/\//i', $trimmed)) {
-            return preg_replace('/^http:\/\//i', 'https://', $trimmed);
-        }
-
+        if (!is_string($url) || !($trimmed = trim($url))) return null;
+        if (preg_match('/^https:\/\//i', $trimmed) || str_starts_with($trimmed, '/') || preg_match('/^data:image\//i', $trimmed)) return $trimmed;
+        if (preg_match('/^http:\/\//i', $trimmed)) return preg_replace('/^http:\/\//i', 'https://', $trimmed);
         return null;
     }
 }

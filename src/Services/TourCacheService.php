@@ -107,40 +107,25 @@ class TourCacheService
             return null;
         }
 
-        // Resolve step translations for active host locale
-        $currentLocale = app()->getLocale();
+        // Resolve translations + add i18n fields in one pass (raw data is cached, locale is resolved per-request)
+        $locale = app()->getLocale();
         $fallback = config('app.fallback_locale', 'it');
 
-        $tourData['steps'] = array_map(function ($s) use ($currentLocale, $fallback) {
-            return [
-                'id' => $s['id'],
-                'element_selector' => $s['element_selector'],
-                'target_text' => $s['target_text'],
-                'title' => self::resolveTranslation($s['title'], $currentLocale, $fallback) ?? '',
-                'description' => self::resolveTranslation($s['description'], $currentLocale, $fallback) ?? '',
-                'video_url' => self::resolveTranslation($s['video_url'], $currentLocale, $fallback),
-                'title_i18n' => $s['title'],
-                'description_i18n' => $s['description'],
-                'video_url_i18n' => $s['video_url'],
-                'card_size' => $s['card_size'] ?? 'md',
-                'position' => $s['position'],
-                'sort_order' => $s['sort_order'],
-            ];
+        $tourData['steps'] = array_map(function ($s) use ($locale, $fallback) {
+            $s['title_i18n'] = $s['title'];
+            $s['description_i18n'] = $s['description'];
+            $s['video_url_i18n'] = $s['video_url'];
+            $s['title'] = self::resolveTranslation($s['title'], $locale, $fallback) ?? '';
+            $s['description'] = self::resolveTranslation($s['description'], $locale, $fallback) ?? '';
+            $s['video_url'] = self::resolveTranslation($s['video_url'], $locale, $fallback);
+            return $s;
         }, $tourData['steps']);
 
-        // Check completion status for the current user
-        $completed = false;
-        $dismissed = false;
-
+        // Check user completion status
+        $completed = $dismissed = false;
         if ($userId) {
-            $record = OnboardingTourUser::where('user_id', $userId)
-                ->where('tour_id', $tourData['id'])
-                ->first();
-
-            if ($record) {
-                $completed = !is_null($record->completed_at);
-                $dismissed = !is_null($record->dismissed_at);
-            }
+            $record = OnboardingTourUser::where('user_id', $userId)->where('tour_id', $tourData['id'])->first();
+            if ($record) { $completed = !is_null($record->completed_at); $dismissed = !is_null($record->dismissed_at); }
         }
 
         $tourData['user_completed'] = $completed;
@@ -181,69 +166,34 @@ class TourCacheService
 
     public static function discoverHostLocales(): array
     {
-        $discovered = [];
-
-        // 1. Check explicit package config if set by host developer
-        $locales = config('onboarding-tour.locales');
-        if (is_array($locales) && !empty($locales)) {
-            $discovered = array_merge($discovered, $locales);
+        // 1. Explicit package config — highest priority
+        $explicit = config('onboarding-tour.locales');
+        if (is_array($explicit) && !empty($explicit)) {
+            return $explicit;
         }
 
-        // 2. Check explicit host app config variables
-        $configLocales = config('app.locales')
-            ?? config('app.available_locales')
-            ?? config('app.supported_locales');
+        // 2. Common host app config keys
+        $discovered = (array) (config('app.locales') ?? config('app.available_locales') ?? config('app.supported_locales') ?? []);
 
-        if (is_array($configLocales) && !empty($configLocales)) {
-            $discovered = array_merge($discovered, $configLocales);
-        }
-
-        // 3. Automatically scan host application's lang folders
-        $langPaths = array_filter([
-            function_exists('lang_path') ? lang_path() : null,
-            function_exists('resource_path') ? resource_path('lang') : null,
-            function_exists('base_path') ? base_path('lang') : null,
-            function_exists('base_path') ? base_path('resources/lang') : null,
-        ]);
-
-        foreach ($langPaths as $langDir) {
-            if (!$langDir || !is_dir($langDir)) {
-                continue;
+        // 3. Scan lang directory for locale folders/JSON files
+        $langDir = function_exists('lang_path') ? lang_path() : resource_path('lang');
+        if (is_dir($langDir)) {
+            $pattern = '/^[a-z]{2,3}(_[A-Z]{2,4})?$/i';
+            foreach (glob($langDir . '/*', GLOB_ONLYDIR) as $d) {
+                $name = basename($d);
+                if ($name !== 'vendor' && preg_match($pattern, $name)) $discovered[] = strtolower($name);
             }
-
-            // Subdirectories in lang/ (e.g. lang/it/, lang/en/, lang/fr/, lang/de/, lang/es/)
-            $dirs = glob($langDir . '/*', GLOB_ONLYDIR);
-            if ($dirs) {
-                foreach ($dirs as $d) {
-                    $basename = basename($d);
-                    if ($basename !== 'vendor' && preg_match('/^[a-z]{2,3}(_[A-Z]{2,4})?$/i', $basename)) {
-                        $discovered[] = strtolower($basename);
-                    }
-                }
-            }
-
-            // JSON files in lang/ (e.g. lang/de.json, lang/en.json, lang/es.json, lang/fr.json, lang/it.json)
-            $files = glob($langDir . '/*.json');
-            if ($files) {
-                foreach ($files as $f) {
-                    $basename = pathinfo($f, PATHINFO_FILENAME);
-                    if (preg_match('/^[a-z]{2,3}(_[A-Z]{2,4})?$/i', $basename)) {
-                        $discovered[] = strtolower($basename);
-                    }
-                }
+            foreach (glob($langDir . '/*.json') as $f) {
+                $name = pathinfo($f, PATHINFO_FILENAME);
+                if (preg_match($pattern, $name)) $discovered[] = strtolower($name);
             }
         }
 
-        // 4. Always include active & fallback locales
-        if (function_exists('app')) {
-            $discovered[] = app()->getLocale();
-        }
-        if (config('app.fallback_locale')) {
-            $discovered[] = config('app.fallback_locale');
-        }
+        // 4. Always include active + fallback
+        $discovered[] = app()->getLocale();
+        if ($fb = config('app.fallback_locale')) $discovered[] = $fb;
 
         $result = array_values(array_unique(array_filter($discovered)));
-
         return !empty($result) ? $result : ['it', 'en'];
     }
 

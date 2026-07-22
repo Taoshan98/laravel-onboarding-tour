@@ -86,16 +86,9 @@
 .tour-btn-start {
     background: rgba(37, 99, 235, 0.08);
     color: #2563eb !important;
-    border: 1px solid rgba(37, 99, 235, 0.25);
-    font-size: 12px;
+    border-color: rgba(37, 99, 235, 0.25);
     font-weight: 700;
-    border-radius: 12px;
-    padding: 7px 14px;
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .tour-btn-start {
@@ -125,13 +118,8 @@
     transition: transform 0.2s ease;
 }
 
-.dark .tour-btn-start svg {
-    color: #60a5fa;
-}
-
-.tour-btn-start:hover svg {
-    transform: scale(1.15) rotate(5deg);
-}
+.dark .tour-btn-start svg { color: #60a5fa; }
+.tour-btn-start:hover svg { transform: scale(1.15) rotate(5deg); }
 
 .tour-btn-builder {
     background: var(--tour-bg-surface);
@@ -655,12 +643,10 @@
     border-color: var(--tour-accent-color, #2563eb) !important;
 }
 
-/* Modals & Dialog Overlays */
-#tour-confirm-modal,
-.tour-confirm-modal {
+/* Modals & Dialog Overlays — Unified base */
+.tour-modal-overlay {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 100020 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -668,30 +654,13 @@
     background-color: rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(4px) !important;
     -webkit-backdrop-filter: blur(4px) !important;
-}
-
-#tour-builder-modal,
-.tour-builder-modal {
-    position: fixed !important;
-    inset: 0 !important;
     z-index: 100010 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 16px;
-    background-color: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
 }
 
-#tour-media-lightbox-modal,
+#tour-confirm-modal { z-index: 100020 !important; }
+
 .tour-media-lightbox-modal {
-    position: fixed !important;
-    inset: 0 !important;
     z-index: 100030 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     padding: 24px;
     background-color: rgba(0, 0, 0, 0.85) !important;
     backdrop-filter: blur(8px) !important;
@@ -943,20 +912,8 @@
     border: 1px solid rgba(63, 63, 70, 0.8);
 }
 
-/* ── Keyboard Shortcuts Palette Modal Overlay & Badges ── */
-#tour-shortcuts-modal,
-.tour-shortcuts-modal {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 100040 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 16px;
-    background-color: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
-}
+/* ── Keyboard Shortcuts Palette ── */
+#tour-shortcuts-modal { z-index: 100040 !important; }
 
 /* Styled KBD Key Badges */
 .tour-kbd {
