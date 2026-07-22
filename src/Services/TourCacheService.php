@@ -8,25 +8,32 @@ use Taoshan\LaravelOnboardingTour\Models\OnboardingTourUser;
 
 class TourCacheService
 {
+    private const DEFAULT_THEME = [
+        'use_custom_theme' => false,
+        'card_style'       => 'auto',
+        'accent_color'     => '#2563eb',
+        'card_radius'      => '20px',
+        'highlight_style'  => 'minimal',
+        'backdrop_hex'     => '#0f172a',
+        'backdrop_opacity' => 75,
+        'backdrop_color'   => 'rgba(15, 23, 42, 0.75)',
+    ];
+    private const GLOBAL_THEME_ROUTE = '__global_theme__';
+
     public static function getGlobalTheme(): array
     {
-        $defaultConfig = config('onboarding-tour.theme', [
-            'use_custom_theme' => false,
-            'card_style'       => 'auto',
-            'card_size'        => 'md',
-            'accent_color'     => '#2563eb',
-            'card_radius'      => '20px',
-            'highlight_style'  => 'minimal',
-            'backdrop_hex'     => '#0f172a',
-            'backdrop_opacity' => 75,
-            'backdrop_color'   => 'rgba(15, 23, 42, 0.75)',
-        ]);
-
         $prefix = config('onboarding-tour.cache_prefix', 'onboarding_tour:');
         $cacheKey = "{$prefix}global_theme";
 
-        return Cache::rememberForever($cacheKey, function () use ($defaultConfig) {
-            return $defaultConfig;
+        return Cache::rememberForever($cacheKey, function () {
+            try {
+                $row = OnboardingTour::where('route_name', self::GLOBAL_THEME_ROUTE)->first();
+                if ($row && is_array($row->theme_settings)) {
+                    return array_merge(self::DEFAULT_THEME, $row->theme_settings);
+                }
+            } catch (\Throwable $e) {}
+
+            return self::DEFAULT_THEME;
         });
     }
 
@@ -38,13 +45,22 @@ class TourCacheService
         $current = self::getGlobalTheme();
         $updated = array_merge($current, $themeData, ['use_custom_theme' => false]);
 
+        // Persist to DB
+        try {
+            OnboardingTour::updateOrCreate(
+                ['route_name' => self::GLOBAL_THEME_ROUTE],
+                ['title' => 'Global Theme', 'theme_settings' => $updated, 'is_active' => false]
+            );
+        } catch (\Throwable $e) {}
+
+        // Update cache
         Cache::forever($cacheKey, $updated);
 
         // Clear all route tour caches so all tours immediately reflect the new global theme
         try {
-            OnboardingTour::select('route_name')->get()->each(function ($tour) use ($prefix) {
-                Cache::forget("{$prefix}route:{$tour->route_name}");
-            });
+            OnboardingTour::where('route_name', '!=', self::GLOBAL_THEME_ROUTE)
+                ->select('route_name')->get()
+                ->each(fn($tour) => Cache::forget("{$prefix}route:{$tour->route_name}"));
         } catch (\Throwable $e) {}
 
         return $updated;
