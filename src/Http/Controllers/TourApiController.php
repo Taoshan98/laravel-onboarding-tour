@@ -23,6 +23,7 @@ class TourApiController extends Controller
             return response()->json([
                 'tour' => null,
                 'global_theme' => TourCacheService::getGlobalTheme(),
+                'translations' => trans('onboarding-tour::messages'),
             ]);
         }
 
@@ -31,6 +32,7 @@ class TourApiController extends Controller
         return response()->json([
             'tour' => $tour,
             'global_theme' => TourCacheService::getGlobalTheme(),
+            'translations' => trans('onboarding-tour::messages'),
         ]);
     }
 

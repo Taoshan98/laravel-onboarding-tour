@@ -40,6 +40,13 @@ class TourCacheService
 
         Cache::forever($cacheKey, $updated);
 
+        // Clear all route tour caches so all tours immediately reflect the new global theme
+        try {
+            OnboardingTour::select('route_name')->get()->each(function ($tour) use ($prefix) {
+                Cache::forget("{$prefix}route:{$tour->route_name}");
+            });
+        } catch (\Throwable $e) {}
+
         return $updated;
     }
 
