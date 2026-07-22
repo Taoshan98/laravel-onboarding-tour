@@ -9,7 +9,6 @@
         'route_name' => $routeName,
         'tour' => $tourData,
         'global_theme' => $globalTheme,
-        'is_admin' => true,
         'translations' => trans('onboarding-tour::messages'),
     ]);
 @endphp

@@ -1585,8 +1585,7 @@
                         window.LaravelOnboardingTour.init({
                             route_name: currentRoute,
                             tour: data.tour,
-                            global_theme: data.global_theme,
-                            is_admin: data.is_admin
+                            global_theme: data.global_theme
                         });
                     }
                 })

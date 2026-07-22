@@ -13,28 +13,16 @@ use Taoshan\LaravelOnboardingTour\Services\TourCacheService;
 
 class TourApiController extends Controller
 {
-    protected function isAdmin($user): bool
-    {
-        if (!$user) return false;
-        if (isset($user->is_admin) && $user->is_admin) return true;
-        if (isset($user->role) && in_array($user->role, ['admin', 'super-admin'])) return true;
-        if (method_exists($user, 'hasRole') && $user->hasRole('admin')) return true;
-        return true; // Default fallback for dev environment
-    }
-
     public function getConfig(Request $request): JsonResponse
     {
         $routeName = $request->query('route_name');
         $user = Auth::user();
         $userId = $user?->id;
 
-        $isAdmin = $this->isAdmin($user);
-
         if (!$routeName) {
             return response()->json([
                 'tour' => null,
                 'global_theme' => TourCacheService::getGlobalTheme(),
-                'is_admin' => $isAdmin
             ]);
         }
 
@@ -43,17 +31,11 @@ class TourApiController extends Controller
         return response()->json([
             'tour' => $tour,
             'global_theme' => TourCacheService::getGlobalTheme(),
-            'is_admin' => $isAdmin,
         ]);
     }
 
     public function saveGlobalTheme(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        if (!$this->isAdmin($user)) {
-            return response()->json(['error' => 'Non autorizzato'], 403);
-        }
-
         $data = $request->validate([
             'theme_settings' => 'required|array',
             'theme_settings.card_style' => 'nullable|string',
@@ -77,9 +59,6 @@ class TourApiController extends Controller
     public function saveTour(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (!$this->isAdmin($user)) {
-            return response()->json(['error' => 'Non autorizzato'], 403);
-        }
 
         $data = $request->validate([
             'route_name' => 'required|string',
@@ -176,11 +155,6 @@ class TourApiController extends Controller
 
     public function deleteTour(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        if (!$this->isAdmin($user)) {
-            return response()->json(['error' => 'Non autorizzato'], 403);
-        }
-
         $routeName = $request->input('route_name');
         if ($routeName) {
             OnboardingTour::where('route_name', $routeName)->delete();
