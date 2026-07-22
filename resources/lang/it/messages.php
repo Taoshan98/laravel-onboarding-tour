@@ -15,6 +15,22 @@ return [
     'dismiss_btn' => 'Non mostrare più',
     'expand_media' => 'Espandi',
 
+    // Keyboard Shortcuts & Accessibility
+    'shortcuts_title' => 'Scorciatoie da Tastiera',
+    'shortcuts_btn' => 'Scorciatoie',
+    'shortcut_next' => 'Step Successivo',
+    'shortcut_prev' => 'Step Precedente',
+    'shortcut_finish' => 'Concludi Tour',
+    'shortcut_close' => 'Chiudi / Esci',
+    'shortcut_toggle' => 'Mostra/Nascondi Scorciatoie',
+    'shortcut_section_tour' => 'Navigazione Tour',
+    'shortcut_section_builder' => 'Modalità Builder',
+    'shortcut_toggle_builder' => 'Attiva/Disattiva Builder',
+    'shortcut_open_steps' => 'Drawer Step',
+    'shortcut_open_theme' => 'Impostazioni Tema',
+    'shortcut_save_tour' => 'Salva Tour',
+    'or' => 'o',
+
     // Common buttons & actions
     'close' => 'Chiudi',
     'cancel' => 'Annulla',

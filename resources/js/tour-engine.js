@@ -22,7 +22,8 @@
         card: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 9h16"/></svg>`,
         target: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><circle cx="12" cy="12" r="5" stroke-width="1.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>`,
         backdrop: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`,
-        media: `<svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`
+        media: `<svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`,
+        keyboard: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" stroke-width="1.5"/><path stroke-width="1.5" stroke-linecap="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></svg>`
     };
 
     function t(key, fallback) {
@@ -115,6 +116,257 @@
                 </div>`;
     }
 
+    const ShortcutsModule = {
+        isOpen: false,
+        previousActiveElement: null,
+        _bound: false,
+
+        bindGlobalKeydown: function () {
+            if (this._bound) return;
+            this._bound = true;
+
+            document.addEventListener('keydown', (e) => {
+                const activeEl = document.activeElement;
+                const activeTag = activeEl ? activeEl.tagName.toLowerCase() : '';
+                const isTyping =
+                    activeTag === 'input' ||
+                    activeTag === 'textarea' ||
+                    activeTag === 'select' ||
+                    (activeEl && activeEl.isContentEditable);
+
+                // 1. Save Tour Shortcut (Ctrl+S / Cmd+S in Builder Mode)
+                if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+                    if (window.LaravelOnboardingTour && window.LaravelOnboardingTour.inspectorActive) {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.saveTourDraft();
+                        return;
+                    }
+                }
+
+                // 2. Alt+B: Toggle Builder Mode anytime
+                if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+                    e.preventDefault();
+                    if (window.LaravelOnboardingTour && typeof window.LaravelOnboardingTour.toggleInspectorMode === 'function') {
+                        window.LaravelOnboardingTour.toggleInspectorMode();
+                    }
+                    return;
+                }
+
+                if (isTyping) {
+                    return; // Allow normal typing in input/textarea/select
+                }
+
+                // 3. Toggle Shortcuts Palette Modal (`?` or `Shift + /`)
+                if (e.key === '?' || (e.shiftKey && e.code === 'Slash')) {
+                    e.preventDefault();
+                    this.toggleShortcutsModal();
+                    return;
+                }
+
+                // 4. ESC Key: Close Palette Modal, Edit/Confirm Modals, Drawer, Active Tour, or Exit Builder Mode
+                if (e.key === 'Escape') {
+                    if (this.isOpen) {
+                        this.toggleShortcutsModal(false);
+                        return;
+                    }
+                    const editModal = document.getElementById('tour-step-edit-modal');
+                    if (editModal) {
+                        editModal.remove();
+                        if (window.LaravelOnboardingTour) window.LaravelOnboardingTour.removeInspectorOutline();
+                        return;
+                    }
+                    const confirmModal = document.getElementById('tour-confirm-modal');
+                    if (confirmModal) {
+                        confirmModal.remove();
+                        return;
+                    }
+                    const drawer = document.getElementById('tour-inspector-drawer');
+                    if (drawer && drawer.classList.contains('open')) {
+                        if (window.LaravelOnboardingTour) window.LaravelOnboardingTour.closeStepManagerDrawer();
+                        return;
+                    }
+                    if (window.LaravelOnboardingTour && window.LaravelOnboardingTour.isTourActive()) {
+                        window.LaravelOnboardingTour.closeTour(false, true);
+                        return;
+                    }
+                    if (window.LaravelOnboardingTour && window.LaravelOnboardingTour.inspectorActive) {
+                        window.LaravelOnboardingTour.toggleInspectorMode();
+                        return;
+                    }
+                }
+
+                // 5. Active Tour Navigation Hotkeys
+                if (window.LaravelOnboardingTour && window.LaravelOnboardingTour.isTourActive()) {
+                    if (e.key === 'ArrowRight' || e.key === 'l' || e.key === 'L') {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.nextStep();
+                        return;
+                    } else if (e.key === 'ArrowLeft' || e.key === 'h' || e.key === 'H') {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.prevStep();
+                        return;
+                    } else if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.nextStep();
+                        return;
+                    }
+                }
+
+                // 6. Active Builder Mode Hotkeys
+                if (window.LaravelOnboardingTour && window.LaravelOnboardingTour.inspectorActive) {
+                    if (e.key === 's' || e.key === 'S') {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.activeDrawerTab = 'steps';
+                        window.LaravelOnboardingTour.openStepManagerDrawer();
+                        return;
+                    } else if (e.key === 't' || e.key === 'T') {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.activeDrawerTab = 'theme';
+                        window.LaravelOnboardingTour.openStepManagerDrawer();
+                        return;
+                    } else if (e.key === 'b' || e.key === 'B') {
+                        e.preventDefault();
+                        window.LaravelOnboardingTour.toggleInspectorMode();
+                        return;
+                    }
+                }
+            });
+        },
+
+        toggleShortcutsModal: function (forceState) {
+            this.isOpen = forceState !== undefined ? forceState : !this.isOpen;
+            let modal = document.getElementById('tour-shortcuts-modal');
+
+            if (!this.isOpen) {
+                if (modal) modal.remove();
+                if (this.previousActiveElement && typeof this.previousActiveElement.focus === 'function') {
+                    this.previousActiveElement.focus();
+                    this.previousActiveElement = null;
+                }
+                return;
+            }
+
+            this.previousActiveElement = document.activeElement;
+
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'tour-shortcuts-modal';
+                modal.className = 'tour-shortcuts-modal';
+                modal.setAttribute('role', 'dialog');
+                modal.setAttribute('aria-modal', 'true');
+                modal.setAttribute('aria-label', t('shortcuts_title', 'Keyboard Shortcuts'));
+
+                modal.innerHTML = `
+                    <div class="tour-modal-card tour-shortcuts-card animate-scale-in" style="max-width: 440px;">
+                        <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-700 mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-500">${SVG.keyboard || '⌨️'}</span>
+                                <h3 class="text-sm font-bold">${t('shortcuts_title', 'Keyboard Shortcuts')}</h3>
+                            </div>
+                            <button id="tour-shortcuts-close-btn" class="tour-btn-icon" aria-label="${t('close', 'Close')}">
+                                ${SVG.close}
+                            </button>
+                        </div>
+
+                        <!-- Active Tour Navigation Shortcuts -->
+                        <div class="mb-4">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1.5">${t('shortcut_section_tour', 'Tour Navigation')}</div>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_next', 'Next Step')}</span>
+                                    <div class="flex items-center gap-1">
+                                        <kbd class="tour-kbd">→</kbd>
+                                        <span class="text-zinc-400 text-[10px]">${t('or', 'or')}</span>
+                                        <kbd class="tour-kbd">Space</kbd>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_prev', 'Previous Step')}</span>
+                                    <kbd class="tour-kbd">←</kbd>
+                                </div>
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_finish', 'Finish Tour')}</span>
+                                    <kbd class="tour-kbd">Enter</kbd>
+                                </div>
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_close', 'Dismiss / Exit')}</span>
+                                    <kbd class="tour-kbd">ESC</kbd>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Builder Mode Shortcuts -->
+                        <div class="mb-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1.5">${t('shortcut_section_builder', 'Builder Mode')}</div>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_toggle_builder', 'Toggle Builder')}</span>
+                                    <div class="flex items-center gap-1">
+                                        <kbd class="tour-kbd">Alt</kbd>
+                                        <span class="text-zinc-400 text-[10px]">+</span>
+                                        <kbd class="tour-kbd">B</kbd>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_open_steps', 'Steps Drawer')}</span>
+                                    <kbd class="tour-kbd">S</kbd>
+                                </div>
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_open_theme', 'Theme Settings')}</span>
+                                    <kbd class="tour-kbd">T</kbd>
+                                </div>
+                                <div class="flex items-center justify-between py-0.5">
+                                    <span class="text-zinc-600 dark:text-zinc-300 font-medium">${t('shortcut_save_tour', 'Save Tour')}</span>
+                                    <div class="flex items-center gap-1">
+                                        <kbd class="tour-kbd">Ctrl</kbd>
+                                        <span class="text-zinc-400 text-[10px]">+</span>
+                                        <kbd class="tour-kbd">S</kbd>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                            <span class="text-[10px] text-zinc-400 font-mono">${t('shortcut_toggle', 'Toggle Shortcuts')}: <kbd class="tour-kbd" style="font-size: 9px; min-width: 18px; height: 18px; padding: 0 4px;">?</kbd></span>
+                            <button id="tour-shortcuts-ok-btn" class="tour-btn tour-btn-accent text-xs px-4 py-1.5">${t('close', 'Close')}</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                const closeBtn = document.getElementById('tour-shortcuts-close-btn');
+                const okBtn = document.getElementById('tour-shortcuts-ok-btn');
+
+                if (closeBtn) closeBtn.onclick = () => this.toggleShortcutsModal(false);
+                if (okBtn) {
+                    okBtn.onclick = () => this.toggleShortcutsModal(false);
+                    setTimeout(() => okBtn.focus(), 50);
+                }
+
+                modal.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                        if (focusables.length === 0) return;
+                        const firstEl = focusables[0];
+                        const lastEl = focusables[focusables.length - 1];
+
+                        if (e.shiftKey) {
+                            if (document.activeElement === firstEl) {
+                                lastEl.focus();
+                                e.preventDefault();
+                            }
+                        } else {
+                            if (document.activeElement === lastEl) {
+                                firstEl.focus();
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    };
+
     window.LaravelOnboardingTour = {
         config: null,
         currentTour: null,
@@ -126,6 +378,32 @@
         draftSteps: [],
         activeDrawerTab: 'steps',
         _lastToggleTime: 0,
+
+        isTourActive: function () {
+            return document.getElementById('tour-popover-card') !== null;
+        },
+
+        nextStep: function () {
+            if (!this.currentTour || !this.currentTour.steps) return;
+            if (this.currentStepIndex < this.currentTour.steps.length - 1) {
+                this.currentStepIndex++;
+                this.renderStep(this.currentStepIndex);
+            } else {
+                this.closeTour(true);
+            }
+        },
+
+        prevStep: function () {
+            if (!this.currentTour || !this.currentTour.steps) return;
+            if (this.currentStepIndex > 0) {
+                this.currentStepIndex--;
+                this.renderStep(this.currentStepIndex);
+            }
+        },
+
+        toggleShortcutsModal: function (forceState) {
+            ShortcutsModule.toggleShortcutsModal(forceState);
+        },
 
         themeSettings: {
             use_custom_theme: false,
@@ -166,6 +444,8 @@
             }
 
             this.applyThemeVariables(this.themeSettings);
+
+            ShortcutsModule.bindGlobalKeydown();
 
             if (this.currentTour && this.currentTour.should_auto_start && this.currentTour.steps && this.currentTour.steps.length > 0) {
                 setTimeout(() => this.startTour(), 600);
@@ -384,6 +664,10 @@
                 document.body.appendChild(popover);
             }
 
+            popover.setAttribute('role', 'dialog');
+            popover.setAttribute('aria-modal', 'true');
+            popover.setAttribute('aria-label', `${step.title} (${index + 1}/${total})`);
+
             const sizeClass = step.card_size || this.themeSettings.card_size || 'md';
             popover.className = `tour-popover-card card-${this.themeSettings.card_style || 'auto'} size-${sizeClass}`;
 
@@ -415,13 +699,18 @@
                     <h4 class="font-bold text-base leading-tight">${step.title}</h4>
                     <span class="tour-badge-accent text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">${index + 1}/${total}</span>
                 </div>
-                <div class="tour-step-desc text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 font-medium">
+                <div class="tour-step-desc text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 font-medium" aria-live="polite">
                     ${step.description}
                 </div>
                 <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                    <button id="tour-dismiss-btn" class="text-[11px] font-semibold text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
-                        ${t('dismiss_btn', "Don't show again")}
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="tour-dismiss-btn" class="text-[11px] font-semibold text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
+                            ${t('dismiss_btn', "Don't show again")}
+                        </button>
+                        <button id="tour-shortcuts-btn" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 p-1 rounded-md transition-colors" title="${t('shortcuts_title', 'Keyboard Shortcuts')}" aria-label="${t('shortcuts_title', 'Keyboard Shortcuts')}">
+                            ${SVG.keyboard}
+                        </button>
+                    </div>
                     <div class="flex items-center gap-1.5">
                         ${index > 0 ? `<button id="tour-prev-btn" class="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">${t('prev_btn', 'Back')}</button>` : ''}
                         <button id="tour-next-btn" class="px-4 py-1.5 rounded-lg tour-btn-accent text-xs font-bold shadow-md">
@@ -448,6 +737,36 @@
             document.getElementById('tour-dismiss-btn')?.addEventListener('click', () => {
                 this.closeTour(false, true);
             });
+
+            document.getElementById('tour-shortcuts-btn')?.addEventListener('click', () => {
+                this.toggleShortcutsModal();
+            });
+
+            popover.onkeydown = (e) => {
+                if (e.key === 'Tab') {
+                    const focusables = popover.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                    if (focusables.length === 0) return;
+                    const firstEl = focusables[0];
+                    const lastEl = focusables[focusables.length - 1];
+
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstEl) {
+                            lastEl.focus();
+                            e.preventDefault();
+                        }
+                    } else {
+                        if (document.activeElement === lastEl) {
+                            firstEl.focus();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            };
+
+            setTimeout(() => {
+                const nextBtn = document.getElementById('tour-next-btn');
+                if (nextBtn) nextBtn.focus();
+            }, 50);
         },
 
         closeTour: function (completed = false, dismissed = false) {
@@ -528,6 +847,10 @@
                         ${SVG.palette}
                         <span>${t('theme', 'Theme')}</span>
                     </button>
+                    <button id="tour-shortcuts-inspector-btn" class="tour-btn tour-btn-ghost">
+                        ${SVG.keyboard}
+                        <span>${t('shortcuts_btn', 'Shortcuts')}</span>
+                    </button>
                     <button id="tour-save-all-btn" class="tour-btn tour-btn-accent">
                         ${SVG.check}
                         <span>${t('save_tour', 'Save tour')}</span>
@@ -546,6 +869,9 @@
             document.getElementById('tour-theme-toggle-btn').onclick = () => {
                 this.activeDrawerTab = 'theme';
                 this.openStepManagerDrawer();
+            };
+            document.getElementById('tour-shortcuts-inspector-btn').onclick = () => {
+                this.toggleShortcutsModal();
             };
             document.getElementById('tour-save-all-btn').onclick = () => {
                 this.showConfirmModal(
@@ -1246,7 +1572,19 @@
         handleInspectorHover: function (e) {
             if (!this.inspectorActive) return;
             const target = e.target;
-            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel') || target.closest('#tour-popover-card') || target.closest('#tour-spotlight-mask')) {
+            if (
+                target.closest('#tour-inspector-bar') ||
+                target.closest('#tour-builder-modal') ||
+                target.closest('#tour-step-edit-modal') ||
+                target.closest('#tour-shortcuts-modal') ||
+                target.closest('#tour-admin-toggle-btn') ||
+                target.closest('#tour-confirm-modal') ||
+                target.closest('#tour-drawer-panel') ||
+                target.closest('#tour-popover-card') ||
+                target.closest('#tour-spotlight-mask') ||
+                document.getElementById('tour-shortcuts-modal') ||
+                document.getElementById('tour-step-edit-modal')
+            ) {
                 this.removeInspectorOutline();
                 return;
             }
@@ -1290,7 +1628,17 @@
         _preventNav: function (e) {
             if (!this.inspectorActive) return;
             const target = e.target;
-            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel') || target.closest('#tour-popover-card') || target.closest('#tour-spotlight-mask')) {
+            if (
+                target.closest('#tour-inspector-bar') ||
+                target.closest('#tour-builder-modal') ||
+                target.closest('#tour-step-edit-modal') ||
+                target.closest('#tour-shortcuts-modal') ||
+                target.closest('#tour-admin-toggle-btn') ||
+                target.closest('#tour-confirm-modal') ||
+                target.closest('#tour-drawer-panel') ||
+                target.closest('#tour-popover-card') ||
+                target.closest('#tour-spotlight-mask')
+            ) {
                 return;
             }
 
@@ -1307,7 +1655,19 @@
         handleInspectorClick: function (e) {
             if (!this.inspectorActive) return;
             const target = e.target;
-            if (target.closest('#tour-inspector-bar') || target.closest('#tour-builder-modal') || target.closest('#tour-admin-toggle-btn') || target.closest('#tour-confirm-modal') || target.closest('#tour-drawer-panel') || target.closest('#tour-popover-card') || target.closest('#tour-spotlight-mask')) {
+            if (
+                target.closest('#tour-inspector-bar') ||
+                target.closest('#tour-builder-modal') ||
+                target.closest('#tour-step-edit-modal') ||
+                target.closest('#tour-shortcuts-modal') ||
+                target.closest('#tour-admin-toggle-btn') ||
+                target.closest('#tour-confirm-modal') ||
+                target.closest('#tour-drawer-panel') ||
+                target.closest('#tour-popover-card') ||
+                target.closest('#tour-spotlight-mask') ||
+                document.getElementById('tour-shortcuts-modal') ||
+                document.getElementById('tour-step-edit-modal')
+            ) {
                 return;
             }
 

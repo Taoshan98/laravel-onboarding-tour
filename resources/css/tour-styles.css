@@ -942,3 +942,46 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(63, 63, 70, 0.8);
 }
+
+/* ── Keyboard Shortcuts Palette Modal Overlay & Badges ── */
+#tour-shortcuts-modal,
+.tour-shortcuts-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100040 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+/* Styled KBD Key Badges */
+.tour-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--tour-text-main);
+    background: var(--tour-bg-elevated);
+    border: 1px solid var(--tour-border-color);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility Focus Rings */
+.tour-shortcuts-modal button:focus-visible,
+#tour-popover-card button:focus-visible,
+.tour-kbd:focus-visible {
+    outline: 2px solid #2563eb !important;
+    outline-offset: 2px !important;
+}

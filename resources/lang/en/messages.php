@@ -15,6 +15,22 @@ return [
     'dismiss_btn' => "Don't show again",
     'expand_media' => 'Expand',
 
+    // Keyboard Shortcuts & Accessibility
+    'shortcuts_title' => 'Keyboard Shortcuts',
+    'shortcuts_btn' => 'Shortcuts',
+    'shortcut_next' => 'Next Step',
+    'shortcut_prev' => 'Previous Step',
+    'shortcut_finish' => 'Finish Tour',
+    'shortcut_close' => 'Dismiss / Exit',
+    'shortcut_toggle' => 'Toggle Shortcuts',
+    'shortcut_section_tour' => 'Tour Navigation',
+    'shortcut_section_builder' => 'Builder Mode',
+    'shortcut_toggle_builder' => 'Toggle Builder',
+    'shortcut_open_steps' => 'Steps Drawer',
+    'shortcut_open_theme' => 'Theme Settings',
+    'shortcut_save_tour' => 'Save Tour',
+    'or' => 'or',
+
     // Common buttons & actions
     'close' => 'Close',
     'cancel' => 'Cancel',
