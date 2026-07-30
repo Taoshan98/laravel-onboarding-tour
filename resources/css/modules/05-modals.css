@@ -1,0 +1,190 @@
+/* ═══════════════════════════════════════════════════════════════
+   Laravel Onboarding Tour — Modals, Lightbox & Toasts Module
+   Modals, Dialog Overlays, Lightbox, Toasts & Accessibility Elements
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Modals & Dialog Overlays — Unified base */
+.tour-modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 100010 !important;
+}
+
+#tour-import-modal { z-index: 100015 !important; }
+#tour-confirm-modal { z-index: 100020 !important; }
+
+.tour-media-lightbox-modal {
+    z-index: 100030 !important;
+    padding: 24px;
+    background-color: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.tour-modal-card {
+    background: var(--tour-bg-surface);
+    border: 1px solid var(--tour-border-color);
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 540px;
+    width: 100%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    color: var(--tour-text-main);
+    animation: tour-scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tour-scale-in {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Media Lightbox Container & Expand Button */
+.tour-media-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    max-height: 220px;
+}
+
+.tour-media-preview-img,
+.tour-media-preview-video {
+    width: 100%;
+    height: 100%;
+    min-height: 150px;
+    max-height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+.tour-media-expand-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 4px 9px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.tour-media-expand-btn:hover {
+    background: rgba(0, 0, 0, 0.95);
+    transform: scale(1.05);
+}
+
+/* Lightbox Content & Controls */
+.tour-lightbox-content {
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: 20px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+    object-fit: contain;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tour-lightbox-close-btn {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    z-index: 20;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(24, 24, 27, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease;
+}
+
+.tour-lightbox-close-btn:hover {
+    transform: scale(1.1);
+    background: #000000;
+}
+
+/* Toasts */
+.tour-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100040;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.tour-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 16px;
+    background: rgba(24, 24, 27, 0.95);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(63, 63, 70, 0.8);
+}
+
+/* ── Keyboard Shortcuts Palette ── */
+#tour-shortcuts-modal { z-index: 100040 !important; }
+
+/* Styled KBD Key Badges */
+.tour-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--tour-text-main);
+    background: var(--tour-bg-elevated);
+    border: 1px solid var(--tour-border-color);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility Focus Rings */
+.tour-shortcuts-modal button:focus-visible,
+#tour-popover-card button:focus-visible,
+.tour-kbd:focus-visible {
+    outline: 2px solid #2563eb !important;
+    outline-offset: 2px !important;
+}

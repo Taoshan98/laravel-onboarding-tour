@@ -1,3 +1,9 @@
+@once('onboarding-tour-styles')
+    <style>
+        {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('css/tour-styles.css') !!}
+    </style>
+@endonce
+
 <button id="tour-admin-toggle-btn"
         title="{{ __('onboarding-tour::messages.builder_title') }}"
         {{ $attributes->merge(['class' => 'tour-btn tour-btn-builder']) }}>

@@ -26,5 +26,8 @@
                 "Taoshan\\LaravelOnboardingTour\\OnboardingTourServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "build-assets": "php scripts/build-assets.php"
     }
 }

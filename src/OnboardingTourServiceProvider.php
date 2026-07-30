@@ -37,6 +37,12 @@ class OnboardingTourServiceProvider extends ServiceProvider
         // Register API Routes
         $this->registerRoutes();
 
+        // Auto-flush cache on Eloquent model changes (prevents DB-Cache desynchronization)
+        Models\OnboardingTour::saved(fn() => Services\TourCacheService::flushAllCaches());
+        Models\OnboardingTour::deleted(fn() => Services\TourCacheService::flushAllCaches());
+        Models\OnboardingTourStep::saved(fn() => Services\TourCacheService::flushAllCaches());
+        Models\OnboardingTourStep::deleted(fn() => Services\TourCacheService::flushAllCaches());
+
         // Publishing assets & config & lang
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -68,6 +74,7 @@ class OnboardingTourServiceProvider extends ServiceProvider
             'middleware' => $middleware,
         ], function () {
             Route::get('/config', [TourApiController::class, 'getConfig'])->name('onboarding-tour.config');
+            Route::get('/list', [TourApiController::class, 'listTours'])->name('onboarding-tour.list');
             Route::post('/save', [TourApiController::class, 'saveTour'])->name('onboarding-tour.save');
             Route::post('/save-global-theme', [TourApiController::class, 'saveGlobalTheme'])->name('onboarding-tour.save-global-theme');
             Route::post('/complete', [TourApiController::class, 'completeTour'])->name('onboarding-tour.complete');

@@ -166,4 +166,16 @@ return [
     'back_to_builder' => 'Back to Editor',
     'tour_saved_success' => 'Tour saved successfully',
     'unauthenticated' => 'User not authenticated',
+
+    // Import / Clone Tour
+    'import_tour_btn' => 'Import Tour',
+    'import_tour_title' => 'Import Tour from another page',
+    'import_tour_subtitle' => 'Select an existing tour to copy its steps to this page.',
+    'import_tour_select_label' => 'Select Tour to Clone',
+    'import_tour_confirm_msg' => 'Import :count steps from this tour? Current draft steps will be replaced.',
+    'import_tour_success' => 'Steps imported successfully!',
+    'no_tours_to_import' => 'No other tours available to clone.',
+    'import_tour_steps_badge' => ':count steps',
+    'import_btn_action' => 'Import',
+    'current_page_badge' => 'Current Page',
 ];

@@ -44,6 +44,15 @@ class TourApiController extends Controller
         ]);
     }
 
+    public function listTours(Request $request): JsonResponse
+    {
+        $tours = TourCacheService::getCachedToursList();
+
+        return response()->json([
+            'tours' => $tours,
+        ]);
+    }
+
     public function saveGlobalTheme(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -72,6 +81,7 @@ class TourApiController extends Controller
 
         $data = $request->validate([
             'route_name' => 'required|string',
+            'is_wildcard' => 'nullable|boolean',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'auto_start' => 'boolean',
@@ -90,8 +100,13 @@ class TourApiController extends Controller
             'steps.*.sort_order' => 'nullable|integer',
         ]);
 
+        $isWildcard = $data['is_wildcard'] ?? true;
+        $routeName = $isWildcard
+            ? TourCacheService::normalizeRoutePattern($data['route_name'])
+            : $data['route_name'];
+
         $tour = OnboardingTour::updateOrCreate(
-            ['route_name' => $data['route_name']],
+            ['route_name' => $routeName],
             [
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
@@ -134,13 +149,16 @@ class TourApiController extends Controller
             ->whereNotIn('id', $existingStepIds)
             ->delete();
 
-        // Flush Redis cache for this route
+        // Flush Redis cache for both raw and normalized route
         TourCacheService::flushCacheForRoute($data['route_name']);
+        if ($routeName !== $data['route_name']) {
+            TourCacheService::flushCacheForRoute($routeName);
+        }
 
         return response()->json([
             'success' => true,
             'message' => trans('onboarding-tour::messages.tour_saved_success'),
-            'tour' => TourCacheService::getTourForRoute($data['route_name'], $user),
+            'tour' => TourCacheService::getTourForRoute($routeName, $user),
         ]);
     }
 
@@ -156,18 +174,7 @@ class TourApiController extends Controller
             'action' => 'required|string|in:complete,dismiss',
         ]);
 
-        $record = OnboardingTourUser::firstOrNew([
-            'user_type' => $user->getMorphClass(),
-            'user_id' => $user->getKey(),
-            'tour_id' => $data['tour_id'],
-        ]);
-
-        if ($data['action'] === 'dismiss') {
-            $record->dismissed_at = now();
-        } else {
-            $record->completed_at = now();
-        }
-        $record->save();
+        TourCacheService::recordUserProgress($data['tour_id'], $data['action'], $user);
 
         return response()->json(['success' => true]);
     }

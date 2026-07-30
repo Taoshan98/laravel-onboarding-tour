@@ -1,0 +1,65 @@
+/* ═══════════════════════════════════════════════════════════════
+   Laravel Onboarding Tour — Base Module
+   Root variables, dark mode overrides, and component resets
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+    --tour-accent-color: #2563eb;
+    --tour-accent-hover: #1d4ed8;
+    --tour-accent-light: rgba(37, 99, 235, 0.12);
+    --tour-card-radius: 20px;
+    --tour-backdrop-bg: rgba(15, 23, 42, 0.75);
+    --tour-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+    /* Light Theme Defaults */
+    --tour-bg-surface: #ffffff;
+    --tour-bg-elevated: #f4f4f5;
+    --tour-bg-card: #ffffff;
+    --tour-text-main: #18181b;
+    --tour-text-muted: #71717a;
+    --tour-text-subtle: #a1a1aa;
+    --tour-border-color: #e4e4e7;
+    --tour-border-subtle: #f4f4f5;
+    --tour-input-bg: #ffffff;
+    --tour-input-border: #d4d4d8;
+}
+
+/* Dark Mode Overrides (Strictly triggered by host app .dark or [data-theme="dark"]) */
+.dark, html.dark, body.dark, .dark #onboarding-tour-widget, .dark .tour-drawer-panel, .dark .tour-inspector-bar, .dark .tour-popover-card, .dark .tour-confirm-modal, .dark .tour-builder-modal, .dark .tour-import-modal, [data-theme="dark"] {
+    --tour-bg-surface: #18181b;
+    --tour-bg-elevated: #27272a;
+    --tour-bg-card: #18181b;
+    --tour-text-main: #f4f4f5;
+    --tour-text-muted: #a1a1aa;
+    --tour-text-subtle: #71717a;
+    --tour-border-color: #3f3f46;
+    --tour-border-subtle: #27272a;
+    --tour-input-bg: #27272a;
+    --tour-input-border: #3f3f46;
+}
+
+/* Base Component Font & Box Reset */
+#onboarding-tour-widget,
+.tour-inspector-bar,
+.tour-drawer-panel,
+.tour-popover-card,
+.tour-confirm-modal,
+.tour-builder-modal,
+.tour-import-modal,
+.tour-media-lightbox-modal,
+.tour-toast-container {
+    font-family: var(--tour-font);
+    box-sizing: border-box;
+}
+
+#onboarding-tour-widget *,
+.tour-inspector-bar *,
+.tour-drawer-panel *,
+.tour-popover-card *,
+.tour-confirm-modal *,
+.tour-builder-modal *,
+.tour-import-modal *,
+.tour-media-lightbox-modal *,
+.tour-toast-container * {
+    box-sizing: border-box;
+}

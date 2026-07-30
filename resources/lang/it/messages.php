@@ -166,4 +166,16 @@ return [
     'back_to_builder' => 'Torna all\'Editor',
     'tour_saved_success' => 'Tour salvato con successo',
     'unauthenticated' => 'Utente non autenticato',
+
+    // Import / Clone Tour
+    'import_tour_btn' => 'Importa Tour',
+    'import_tour_title' => 'Importa Tour da un\'altra pagina',
+    'import_tour_subtitle' => 'Seleziona un tour esistente per copiarne gli step in questa pagina.',
+    'import_tour_select_label' => 'Seleziona Tour da Clonare',
+    'import_tour_confirm_msg' => 'Importare i :count step da questo tour? Gli step esistenti nel draft verranno sostituiti.',
+    'import_tour_success' => 'Step importati con successo!',
+    'no_tours_to_import' => 'Nessun altro tour disponibile da clonare.',
+    'import_tour_steps_badge' => ':count step',
+    'import_btn_action' => 'Importa',
+    'current_page_badge' => 'Pagina Attuale',
 ];

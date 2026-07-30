@@ -28,9 +28,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Settings (Redis / Default Cache)
+    | Cache Settings (Redis / Dedicated Cache Store)
     |--------------------------------------------------------------------------
+    | Specify a dedicated cache store (e.g. 'redis', 'memcached') or leave null
+    | to use the host application's default cache store.
+    | Enable 'use_cache_tags' to leverage Redis Cache Tags for instant invalidation.
+    |
     */
-    'cache_ttl' => 86400, // 24 hours
-    'cache_prefix' => 'onboarding_tour:',
+    'cache_store' => env('ONBOARDING_TOUR_CACHE_STORE', null),
+    'use_cache_tags' => env('ONBOARDING_TOUR_CACHE_TAGS', true),
+    'cache_ttl' => env('ONBOARDING_TOUR_CACHE_TTL', 86400), // 24 hours
+    'cache_prefix' => env('ONBOARDING_TOUR_CACHE_PREFIX', 'onboarding_tour:'),
 ];

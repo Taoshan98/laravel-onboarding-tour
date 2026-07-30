@@ -1,0 +1,167 @@
+/* ═══════════════════════════════════════════════════════════════
+   Laravel Onboarding Tour — Buttons Module
+   Standalone Button System
+   ═══════════════════════════════════════════════════════════════ */
+
+.tour-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    text-decoration: none;
+    background: transparent;
+}
+
+.tour-btn-start {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb !important;
+    border-color: rgba(37, 99, 235, 0.25);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.dark .tour-btn-start {
+    background: rgba(37, 99, 235, 0.15);
+    color: #60a5fa !important;
+    border-color: rgba(59, 130, 246, 0.35);
+}
+
+.tour-btn-start:hover {
+    background: rgba(37, 99, 235, 0.16);
+    border-color: rgba(37, 99, 235, 0.45);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
+    transform: translateY(-1.5px);
+}
+
+.dark .tour-btn-start:hover {
+    background: rgba(37, 99, 235, 0.28);
+    border-color: rgba(96, 165, 250, 0.5);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.tour-btn-start svg {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.2;
+    color: #2563eb;
+    transition: transform 0.2s ease;
+}
+
+.dark .tour-btn-start svg { color: #60a5fa; }
+.tour-btn-start:hover svg { transform: scale(1.15) rotate(5deg); }
+
+.tour-btn-builder {
+    background: var(--tour-bg-surface);
+    color: var(--tour-text-main);
+    border: 1px solid var(--tour-border-color);
+    font-weight: 600;
+}
+
+.tour-btn-builder:hover {
+    background: var(--tour-bg-elevated);
+    border-color: var(--tour-text-subtle);
+    transform: translateY(-1px);
+}
+
+.tour-btn-import {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb !important;
+    border: 1px dashed rgba(37, 99, 235, 0.35);
+    font-weight: 700;
+    width: 100%;
+    justify-content: center;
+    padding: 9px 14px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+}
+
+.dark .tour-btn-import {
+    background: rgba(37, 99, 235, 0.14);
+    color: #60a5fa !important;
+    border-color: rgba(96, 165, 250, 0.35);
+}
+
+.tour-btn-import:hover {
+    background: rgba(37, 99, 235, 0.16);
+    border-color: rgba(37, 99, 235, 0.5);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
+    transform: translateY(-1px);
+}
+
+.dark .tour-btn-import:hover {
+    background: rgba(37, 99, 235, 0.25);
+    border-color: rgba(96, 165, 250, 0.55);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.tour-btn-accent {
+    background: #2563eb;
+    color: #ffffff !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.tour-btn-accent:hover {
+    background: #1d4ed8;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+}
+
+/* User-facing Tour Popover Accent Button */
+#tour-popover-card .tour-btn-accent {
+    background: var(--tour-accent-color, #2563eb) !important;
+}
+
+#tour-popover-card .tour-btn-accent:hover {
+    background: var(--tour-accent-hover, #1d4ed8) !important;
+}
+
+.tour-btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tour-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.tour-btn-ghost {
+    background: var(--tour-bg-elevated);
+    color: var(--tour-text-main);
+    border: 1px solid var(--tour-border-color);
+    font-weight: 600;
+}
+
+.tour-btn-ghost:hover {
+    background: var(--tour-border-color);
+    color: var(--tour-text-main);
+    transform: translateY(-1px);
+}
+
+.tour-btn-icon {
+    padding: 6px;
+    border-radius: 10px;
+    color: var(--tour-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tour-btn-icon:hover {
+    background: var(--tour-bg-elevated);
+    color: var(--tour-text-main);
+}

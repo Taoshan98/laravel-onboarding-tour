@@ -20,11 +20,14 @@
 @endphp
 
 @if(config('onboarding-tour.enabled', true))
-    <!-- Inject CSS & JS -->
-    <style>
-        {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('css/tour-styles.css') !!}
-    </style>
+    <!-- Inject CSS (Ensured to render once, as early as any tour component is rendered) -->
+    @once('onboarding-tour-styles')
+        <style>
+            {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('css/tour-styles.css') !!}
+        </style>
+    @endonce
 
+    <!-- Inject JS Engine -->
     <script>
         {!! \Taoshan\LaravelOnboardingTour\OnboardingTourServiceProvider::getAssetContent('js/tour-engine.js') !!}
         document.addEventListener('DOMContentLoaded', function () {

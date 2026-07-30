@@ -1,0 +1,118 @@
+/* ═══════════════════════════════════════════════════════════════
+   Laravel Onboarding Tour — Inspector Module
+   Floating Inspector Bar, Dot Animations, Breadcrumbs, Outline & Badges
+   ═══════════════════════════════════════════════════════════════ */
+
+.tour-inspector-bar {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99995;
+    background: var(--tour-bg-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--tour-border-color);
+    color: var(--tour-text-main);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.tour-inspector-dot-wrapper {
+    position: relative;
+    display: flex;
+    width: 10px;
+    height: 10px;
+}
+
+.tour-inspector-dot-ping {
+    position: absolute;
+    display: inline-flex;
+    height: 100%;
+    width: 100%;
+    border-radius: 9999px;
+    background-color: #34d399;
+    opacity: 0.75;
+    animation: tour-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.tour-inspector-dot-core {
+    position: relative;
+    display: inline-flex;
+    border-radius: 9999px;
+    height: 10px;
+    width: 10px;
+    background-color: #10b981;
+}
+
+@keyframes tour-ping {
+    75%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Inspector Breadcrumbs Bar */
+.tour-breadcrumb-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--tour-bg-elevated);
+    color: var(--tour-text-muted);
+    font-size: 11px;
+    border-radius: 12px;
+    border: 1px solid var(--tour-border-color);
+    margin-bottom: 8px;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.tour-breadcrumb-chip {
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--tour-text-main);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.tour-breadcrumb-chip:hover, .tour-breadcrumb-chip.active {
+    background: var(--tour-accent-color, #2563eb);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Inspector Target Outline Indicator (Fixed Minimal #2563eb Accent) */
+.tour-inspector-outline {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99970;
+    border: 2px dashed #2563eb !important;
+    background: rgba(37, 99, 235, 0.12) !important;
+    border-radius: 8px;
+    transition: all 0.1s ease-out;
+}
+
+.tour-inspector-badge {
+    position: fixed;
+    z-index: 99975;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: monospace;
+    padding: 3px 8px;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    white-space: nowrap;
+}

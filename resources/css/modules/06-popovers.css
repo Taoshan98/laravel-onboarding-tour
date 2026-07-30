@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════════════════
+   Laravel Onboarding Tour — Popovers & Spotlight Module
+   User-facing Tour Popovers, Spotlight Cutout Masks & Highlight Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Spotlight Overlay Mask */
+.tour-spotlight-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 99990;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 0 9999px var(--tour-backdrop-bg, rgba(15, 23, 42, 0.75));
+    border-radius: 12px;
+}
+
+.tour-spotlight-mask.style-minimal {
+    border: 2px solid var(--tour-accent-color, #2563eb);
+    box-shadow: 0 0 0 9999px var(--tour-backdrop-bg, rgba(15, 23, 42, 0.75)), 0 0 15px var(--tour-accent-light, rgba(37, 99, 235, 0.3));
+}
+
+.tour-spotlight-mask.style-ring {
+    border: 2.5px solid var(--tour-accent-color, #2563eb);
+    box-shadow: 0 0 0 9999px var(--tour-backdrop-bg, rgba(15, 23, 42, 0.75)), 0 0 0 4px var(--tour-accent-light, rgba(37, 99, 235, 0.25));
+}
+
+.tour-spotlight-mask.style-glow {
+    border: 2px solid var(--tour-accent-color, #2563eb);
+    box-shadow: 0 0 0 9999px var(--tour-backdrop-bg, rgba(15, 23, 42, 0.75)), 0 0 30px var(--tour-accent-color, #2563eb);
+}
+
+.tour-spotlight-mask.style-dashed {
+    border: 2px dashed var(--tour-accent-color, #2563eb);
+    background: var(--tour-accent-light, rgba(37, 99, 235, 0.08));
+    box-shadow: 0 0 0 9999px var(--tour-backdrop-bg, rgba(15, 23, 42, 0.75));
+}
+
+.tour-spotlight-mask.style-none {
+    border: none;
+    box-shadow: 0 0 0 9999px var(--tour-backdrop-bg, rgba(15, 23, 42, 0.75));
+}
+
+/* Tour Popover Card Base & Themes */
+.tour-popover-card,
+.tour-popover-card.card-auto {
+    position: fixed;
+    z-index: 99995;
+    max-width: 380px;
+    width: calc(100vw - 32px);
+    background: var(--tour-bg-card);
+    border: 1px solid var(--tour-border-color);
+    border-radius: var(--tour-card-radius, 20px);
+    padding: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    color: var(--tour-text-main);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.tour-popover-card.size-sm { max-width: 320px !important; }
+.tour-popover-card.size-md { max-width: 380px !important; }
+.tour-popover-card.size-lg { max-width: 460px !important; }
+.tour-popover-card.size-xl { max-width: 560px !important; }
+
+.tour-popover-card.card-glass {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.dark .tour-popover-card.card-glass {
+    background: rgba(24, 24, 27, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.tour-popover-card.card-dark {
+    background: #18181b !important;
+    color: #ffffff !important;
+    border: 1px solid #27272a !important;
+}
+
+.tour-popover-card.card-light {
+    background: #ffffff !important;
+    color: #18181b !important;
+    border: 1px solid #e4e4e7 !important;
+}
+
+/* Centered popover card when target is unattached/hidden */
+.tour-popover-card.is-centered {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    z-index: 999999 !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4) !important;
+}
+
+/* Trigger Picker Banner */
+.tour-picker-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1b4b;
+    color: #ffffff;
+    border: 2px solid #6366f1;
+    padding: 12px 24px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 9999999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: tour-bounce 1s infinite alternate;
+}
+
+@keyframes tour-bounce {
+    0% { transform: translateX(-50%) translateY(0); }
+    100% { transform: translateX(-50%) translateY(-6px); }
+}
