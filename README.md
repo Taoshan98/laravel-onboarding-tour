@@ -4,7 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/taoshan98/laravel-onboarding-tour.svg?style=flat-square)](https://packagist.org/packages/taoshan98/laravel-onboarding-tour)
 [![License](https://img.shields.io/packagist/l/taoshan98/laravel-onboarding-tour.svg?style=flat-square)](LICENSE)
 
-An interactive onboarding tour package for Laravel. Build guided tours visually in the browser — no code required. Features a live visual builder, multi-language support, theme customization, auto-navigation action steps, interactive UI navigation mode, wildcard route matching, keyboard navigation, media lightbox, and Livewire v3 SPA compatibility.
+An interactive onboarding tour package for Laravel. Build guided tours visually in the browser — no code required. Features a live visual builder, tour cloning & cross-page import, multi-language support, theme customization, auto-navigation action steps, interactive UI navigation mode, wildcard route matching, keyboard navigation, media lightbox, high-performance Redis caching, and Livewire v3 SPA compatibility.
 
 **Zero JS/CSS dependencies.** Works on any Laravel app with or without Tailwind, Bootstrap, or Flux.
 
@@ -13,9 +13,13 @@ An interactive onboarding tour package for Laravel. Build guided tours visually 
 ## Features
 
 - **Visual Builder** — Click any element on your page to create tour steps. Drag & drop to reorder. Live preview.
+- **Tour Cloning & Import** — Easily copy and import tours from other routes (e.g., from `/edit` to `/create`) directly from the Steps Drawer with deduplicated titles and high-contrast page indicators.
 - **Auto Navigation Steps** — Create silent action steps that automatically click tabs, steppers, or buttons to navigate interfaces without showing cards.
 - **Interactive UI Mode** — Temporarily suspend inspector DOM selection to click sub-tabs, dropdowns, and navigate UI while staying inside the builder.
-- **Wildcard Route Matching** — Match dynamic routes easily (e.g. `users/*/edit`) with a one-click toggle ("Applica a pagine simili").
+- **Wildcard Route Matching** — Match dynamic routes easily (e.g. `users/*/edit`) with a default one-click toggle ("Applica a pagine simili") that automatically strips numeric IDs/UUIDs and host domains.
+- **Redis & Zero-SQL Backend Caching** — High-performance caching layer with Redis store support, Redis Cache Tags, cached user progress maps (0 SQL queries on page views for authenticated users), and Eloquent model observers to prevent DB-cache desync.
+- **Instant FOUC-Free Styling** — Blade `@once` CSS injection ensures tour buttons render fully styled from the first millisecond of page load.
+- **Modular & Minified Assets** — Clean modular CSS (`resources/css/modules/`) and JS (`resources/js/modules/`) with automated build script (`composer build-assets`) that generates production-minified bundles.
 - **Form Submission Guard** — Advanced programmatic click protection (`safeClick`) that intercepts native `form.submit()` and event dispatches to prevent unintended page reloads during tour playback.
 - **Async UI Resilience** — Extended polling resilience (up to 1.5s) for slow Livewire v3, Alpine.js, or AJAX network requests to render DOM nodes.
 - **Multi-Language (i18n)** — Auto-discovers host locales from `lang/` directories and config. Per-step titles, descriptions, and media URLs for each language.
@@ -25,7 +29,6 @@ An interactive onboarding tour package for Laravel. Build guided tours visually 
 - **Media Lightbox** — Expandable full-screen viewer for images, GIFs, YouTube, Vimeo, and MP4 videos.
 - **Dark Mode** — Automatically follows your host app's theme (`.dark` class or `[data-theme="dark"]`).
 - **Livewire v3** — Seamless re-init on `wire:navigate` page swaps.
-- **Cache Optimized** — Tour data cached with configurable TTL. Auto-invalidation on theme/tour changes.
 - **Secure** — HTTPS enforcement, XSS protection, dangerous scheme filtering on all URLs.
 
 ---
@@ -46,8 +49,8 @@ Configure tour steps easily with a segmented toggle between **Explanation Card**
 
 ![Step Builder Modal](screenshots/03-step-builder-modal.png)
 
-### Steps Manager Drawer
-Manage all steps in a side drawer. Toggle wildcard URL matching ("Applica a pagine simili"), drag to reorder, edit, delete, or test individual steps.
+### Steps Manager Drawer & Tour Importing
+Manage steps in a side drawer, toggle wildcard matching ("Applica a pagine simili"), drag to reorder, edit, test steps, or click **Importa Tour** to clone steps from another route.
 
 ![Steps Drawer](screenshots/04-steps-drawer.png)
 
@@ -125,22 +128,26 @@ This injects the CSS, JS, and runtime configuration invisibly (headless).
 @endcan
 ```
 
-### 3. Build a tour
+### 3. Build or import a tour
 
-1. Click the **Builder** button (or press `B`) to enter inspector mode.
-2. If you need to switch tabs or open dropdowns before selecting an element, click **Navigazione UI** (Interactive Mode).
-3. Click any element on the page to select it as a step target.
-4. Choose the step mode:
+1. Click the **Importa Tour** button (or press `B`) to enter inspector mode.
+2. If you want to reuse steps from a similar route (e.g. `/edit` to `/create`), click **Importa Tour** in the Steps Drawer and choose an existing tour.
+3. If you need to switch tabs or open dropdowns before selecting an element, click **Navigazione UI** (Interactive Mode).
+4. Click any element on the page to select it as a step target.
+5. Choose the step mode:
    - **Card Spiegazione**: Shows a card with title, description, and optional media.
    - **Navigazione Automatica**: Silently clicks the target element to navigate UI and immediately moves to the next step.
-5. Click **Add Step** — repeat for all steps.
-6. Press `Ctrl+S` (or `Cmd+S`) or click **Save Tour** to persist.
+6. Click **Add Step** — repeat for all steps.
+7. Press `Ctrl+S` (or `Cmd+S`) or click **Save Tour** to persist.
 
-The tour is saved via the REST API and cached automatically.
+The tour is saved via the REST API and cached in Redis automatically.
 
 ---
 
 ## Key Features Breakdown
+
+### Tour Cloning & Importing
+You can copy and import tours across different routes with one click. In the Steps Drawer, click **Importa Tour** to see a modal listing available tours with step counts and route patterns. Hardcoded domain names and numeric IDs are automatically normalized to wildcards (`production_sites/*/edit`), and duplicate titles are cleaned up automatically.
 
 ### Auto Navigation (Action Steps)
 Action steps execute a programmatic click on the targeted element (e.g. tab buttons, wizard step numbers) without displaying a card overlay. This allows seamless transitions across sub-interfaces before displaying subsequent explanation cards.
@@ -149,7 +156,37 @@ Action steps execute a programmatic click on the targeted element (e.g. tab butt
 The engine includes a `safeClick` mechanism with `HTMLFormElement.prototype.submit` interception. Programmatic clicks executed by the tour runner are guarded so that buttons inside `<form>` elements or custom event handlers (like `@save-section`) do not trigger unintended page reloads or form submissions.
 
 ### Wildcard Route Matching
-Enable "Applica a pagine simili" in the Steps Drawer to match dynamic routes (e.g., `/users/1/edit` matching `users/*/edit`).
+Wildcard matching ("Applica a pagine simili") is enabled by default to match dynamic routes (e.g., `/users/1/edit` matching `users/*/edit`). Numeric IDs, UUIDs, and host URLs are stripped automatically.
+
+---
+
+## High-Performance Caching & Redis
+
+The package includes a dedicated caching architecture designed for high-traffic enterprise applications:
+
+- **Zero-SQL Page Views**: User completion/dismissal status is cached in a Redis user status map (`{$prefix}user_status:{userType}:{userId}`). Requests from authenticated users incur **0 SQL queries** during page rendering.
+- **Redis Cache Tags**: Supports Redis tags (`Cache::tags(['onboarding_tour'])`) for instant bulk cache flushing.
+- **Eloquent Model Observers**: `OnboardingTour` and `OnboardingTourStep` models automatically trigger cache invalidation on `saved` and `deleted` events, preventing database-cache desynchronization even when modifying records outside the API (e.g. via Tinker or Seeders).
+- **Dedicated Store Config**: Route package caching to a specific cache store via `ONBOARDING_TOUR_CACHE_STORE=redis`.
+
+---
+
+## Asset Development & Bundling
+
+The frontend codebase is organized into modular source files:
+
+- **CSS Modules**: `resources/css/modules/*.css` (base, buttons, inspector, drawer, modals, popovers)
+- **JS Modules**: `resources/js/modules/*.js` (utils, theme, builder, drawer, runner, main)
+
+When modifying frontend code, run the asset bundler script:
+
+```bash
+composer build-assets
+# or
+php scripts/build-assets.php
+```
+
+This concatenates and minifies the source modules into standalone production bundles (`resources/css/tour-styles.css` & `resources/js/tour-engine.js`).
 
 ---
 
@@ -161,15 +198,6 @@ The package automatically discovers all locales available in your host applicati
 2. **Host app config** — `config('app.locales')`, `config('app.available_locales')`, or `config('app.supported_locales')`
 3. **Filesystem scan** — Subdirectories and `.json` files in your `lang/` folder
 4. **Always included** — `app()->getLocale()` and `config('app.fallback_locale')`
-
-### Default language indicator
-
-The language configured in `config('app.locale')` is shown **first** in the builder modal. If an admin fills in content only for the default language, that content is used as fallback for all other languages.
-
-```php
-// config/onboarding-tour.php
-'locales' => ['en', 'it', 'de', 'fr'], // null = auto-discover
-```
 
 ---
 
@@ -188,8 +216,6 @@ Press `?` to open the interactive shortcuts palette.
 | `S` | Open steps drawer | Builder mode |
 | `T` | Open theme drawer | Builder mode |
 | `Ctrl+S` / `Cmd+S` | Save tour | Builder mode |
-
-All interactive elements support **Tab / Shift+Tab** focus trapping and ARIA attributes for accessibility.
 
 ---
 
@@ -216,17 +242,6 @@ Themes are managed entirely through the **admin UI** — no config files needed.
 | `dashed` | Dashed border with tinted background |
 | `none` | No highlight border |
 
-### Backdrop presets
-
-| Preset | Color |
-|---|---|
-| Midnight Slate | `#0f172a` |
-| Deep Indigo | `#1e1b4b` |
-| Emerald Night | `#022c22` |
-| Soft Charcoal | `#334155` |
-
-Opacity is adjustable from 20% to 95% via the live preview slider.
-
 ---
 
 ## Configuration
@@ -240,14 +255,16 @@ return [
 
     // API routes
     'route_prefix' => 'api/onboarding-tour',
-    'middleware'    => ['web', 'auth'],
+    'middleware'   => ['web', 'auth'],
 
     // Locales: null = auto-discover from host app
     'locales' => null,
 
-    // Cache
-    'cache_ttl'    => 86400,              // 24 hours (seconds)
-    'cache_prefix' => 'onboarding_tour:', // Redis key prefix
+    // Cache & Redis Settings
+    'cache_store'    => env('ONBOARDING_TOUR_CACHE_STORE', null),  // e.g. 'redis'
+    'use_cache_tags' => env('ONBOARDING_TOUR_CACHE_TAGS', true),  // Enable Redis Cache Tags
+    'cache_ttl'      => env('ONBOARDING_TOUR_CACHE_TTL', 86400),  // 24 hours (seconds)
+    'cache_prefix'   => env('ONBOARDING_TOUR_CACHE_PREFIX', 'onboarding_tour:'),
 ];
 ```
 
@@ -260,92 +277,27 @@ All endpoints use the configured `route_prefix` and `middleware`.
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/config?route_name={route}` | Get tour data, theme, translations, and locales for a route |
+| `GET` | `/list` | Get list of all active tours with step counts for cloning/importing |
 | `POST` | `/save` | Create or update a tour with steps |
 | `POST` | `/save-global-theme` | Update the global theme settings |
-| `POST` | `/complete` | Mark a tour as completed or dismissed for the current user |
+| `POST` | `/complete` | Mark a tour as completed or dismissed for current user |
 | `POST` | `/delete` | Delete a tour by route name |
 
 ---
 
-## How It Works
+## Customizing Views & Assets
 
-### Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│  Blade Component: <x-onboarding-tour />     │
-│  Inlines CSS + JS + config JSON             │
-└──────────────────┬──────────────────────────┘
-                   │
-      ┌────────────▼────────────┐
-      │   tour-engine.js        │
-      │   (Vanilla JS, IIFE)    │
-      │                         │
-      │  • Tour runner          │
-      │  • Visual builder       │
-      │  • Auto-navigation      │
-      │  • Form reload guard    │
-      │  • Theme editor         │
-      │  • Keyboard shortcuts   │
-      │  • Media lightbox       │
-      └────────────┬────────────┘
-                   │ fetch()
-      ┌────────────▼────────────┐
-      │  TourApiController      │
-      │  (REST API)             │
-      └────────────┬────────────┘
-                   │
-      ┌────────────▼────────────┐
-      │  TourCacheService       │
-      │  • Cache layer          │
-      │  • Locale discovery     │
-      │  • Translation resolver │
-      └────────────┬────────────┘
-                   │
-      ┌────────────▼────────────┐
-      │  Eloquent Models        │
-      │  • OnboardingTour       │
-      │  • OnboardingTourStep   │
-      │  • OnboardingTourUser   │
-      └─────────────────────────┘
-```
-
----
-
-## Customizing Views
-
-Publish and edit the Blade templates:
+Publish and edit Blade templates:
 
 ```bash
 php artisan vendor:publish --tag="onboarding-tour-views"
 ```
 
-This copies the views to `resources/views/vendor/onboarding-tour/` where you can customize:
+This copies views to `resources/views/vendor/onboarding-tour/`:
 
-- `components/tour-runner.blade.php` — Main component (CSS/JS injection)
+- `components/tour-runner.blade.php` — Main component (inlines CSS/JS with `@once`)
 - `components/tour-trigger.blade.php` — Start tour button
 - `components/tour-builder-toggle.blade.php` — Admin builder toggle button
-
----
-
-## Customizing Translations
-
-Publish and edit translation files:
-
-```bash
-php artisan vendor:publish --tag="onboarding-tour-lang"
-```
-
-Available languages: `en`, `it`. Add more by creating new files in `lang/vendor/onboarding-tour/{locale}/messages.php`.
-
----
-
-## Security
-
-- All media URLs are sanitized: only `https://`, relative paths (`/`), and `data:image/` are allowed
-- `http://` URLs are automatically upgraded to `https://`
-- Dangerous schemes (`javascript:`, `data:text/html`, etc.) are blocked
-- External links use `rel="noopener noreferrer"` protection
 
 ---
 
