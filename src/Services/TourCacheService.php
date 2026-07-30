@@ -426,10 +426,11 @@ class TourCacheService
     public static function normalizeRoutePattern(string $routeName): string
     {
         $pattern = preg_replace('/^https?:\/\/[^\/]+/', '', $routeName);
-        $pattern = preg_replace('/\{[^}]+\}/', '*', $pattern);
-        $pattern = preg_replace('/(?<=\/)\d+(?=\/|$)/', '*', $pattern);
-        $pattern = preg_replace('/(?<=\/)[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=\/|$)/', '*', $pattern);
-        return $pattern;
+        return preg_replace([
+            '/\{[^}]+\}/',
+            '/(?<=\/)\d+(?=\/|$)/',
+            '/(?<=\/)[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=\/|$)/',
+        ], '*', $pattern);
     }
 
     /**

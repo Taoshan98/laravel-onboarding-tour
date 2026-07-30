@@ -39,18 +39,9 @@ class OnboardingTourStep extends Model
      */
     public function getTranslatedAttribute(string $attribute, ?string $locale = null): ?string
     {
-        $locale = $locale ?? app()->getLocale();
-        $fallback = config('app.fallback_locale', 'it');
-        $data = $this->{$attribute};
-
-        if (is_string($data)) {
-            return $data;
-        }
-
-        if (is_array($data)) {
-            return $data[$locale] ?? ($data[$fallback] ?? (reset($data) ?: null));
-        }
-
-        return null;
+        return \Taoshan\LaravelOnboardingTour\Services\TourCacheService::resolveTranslation(
+            $this->{$attribute},
+            $locale
+        );
     }
 }

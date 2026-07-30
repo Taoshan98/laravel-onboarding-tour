@@ -17,39 +17,22 @@ class TourApiController extends Controller
     {
         $routeName = $request->query('route_name');
         $user = Auth::user();
-
-        $locales = TourCacheService::discoverHostLocales();
-        $currentLocale = app()->getLocale();
-
-        if (!$routeName) {
-            return response()->json([
-                'tour' => null,
-                'global_theme' => TourCacheService::getGlobalTheme(),
-                'translations' => trans('onboarding-tour::messages'),
-                'locales' => array_values($locales),
-                'default_locale' => config('app.locale', 'en'),
-                'current_locale' => $currentLocale,
-            ]);
-        }
-
-        $tour = TourCacheService::getTourForRoute($routeName, $user);
+        $tour = $routeName ? TourCacheService::getTourForRoute($routeName, $user) : null;
 
         return response()->json([
             'tour' => $tour,
             'global_theme' => TourCacheService::getGlobalTheme(),
             'translations' => trans('onboarding-tour::messages'),
-            'locales' => array_values($locales),
+            'locales' => array_values(TourCacheService::discoverHostLocales()),
             'default_locale' => config('app.locale', 'en'),
-            'current_locale' => $currentLocale,
+            'current_locale' => app()->getLocale(),
         ]);
     }
 
     public function listTours(Request $request): JsonResponse
     {
-        $tours = TourCacheService::getCachedToursList();
-
         return response()->json([
-            'tours' => $tours,
+            'tours' => TourCacheService::getCachedToursList(),
         ]);
     }
 
@@ -149,11 +132,8 @@ class TourApiController extends Controller
             ->whereNotIn('id', $existingStepIds)
             ->delete();
 
-        // Flush Redis cache for both raw and normalized route
-        TourCacheService::flushCacheForRoute($data['route_name']);
-        if ($routeName !== $data['route_name']) {
-            TourCacheService::flushCacheForRoute($routeName);
-        }
+        // Flush all tour caches once
+        TourCacheService::flushAllCaches();
 
         return response()->json([
             'success' => true,
@@ -184,7 +164,7 @@ class TourApiController extends Controller
         $routeName = $request->input('route_name');
         if ($routeName) {
             OnboardingTour::where('route_name', $routeName)->delete();
-            TourCacheService::flushCacheForRoute($routeName);
+            TourCacheService::flushAllCaches();
         }
 
         return response()->json(['success' => true]);
@@ -197,8 +177,8 @@ class TourApiController extends Controller
         }
 
         if (!is_string($url) || !($trimmed = trim($url))) return null;
-        if (preg_match('/^https:\/\//i', $trimmed) || str_starts_with($trimmed, '/') || preg_match('/^data:image\//i', $trimmed)) return $trimmed;
-        if (preg_match('/^http:\/\//i', $trimmed)) return preg_replace('/^http:\/\//i', 'https://', $trimmed);
+        if (str_starts_with($trimmed, '/') || str_starts_with($trimmed, 'https://') || str_starts_with($trimmed, 'data:image/')) return $trimmed;
+        if (str_starts_with($trimmed, 'http://')) return 'https://' . substr($trimmed, 7);
         return null;
     }
 }

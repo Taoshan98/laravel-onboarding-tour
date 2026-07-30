@@ -38,10 +38,11 @@ class OnboardingTourServiceProvider extends ServiceProvider
         $this->registerRoutes();
 
         // Auto-flush cache on Eloquent model changes (prevents DB-Cache desynchronization)
-        Models\OnboardingTour::saved(fn() => Services\TourCacheService::flushAllCaches());
-        Models\OnboardingTour::deleted(fn() => Services\TourCacheService::flushAllCaches());
-        Models\OnboardingTourStep::saved(fn() => Services\TourCacheService::flushAllCaches());
-        Models\OnboardingTourStep::deleted(fn() => Services\TourCacheService::flushAllCaches());
+        $flushCache = [Services\TourCacheService::class, 'flushAllCaches'];
+        Models\OnboardingTour::saved($flushCache);
+        Models\OnboardingTour::deleted($flushCache);
+        Models\OnboardingTourStep::saved($flushCache);
+        Models\OnboardingTourStep::deleted($flushCache);
 
         // Publishing assets & config & lang
         if ($this->app->runningInConsole()) {
@@ -89,16 +90,22 @@ class OnboardingTourServiceProvider extends ServiceProvider
 
     public static function getAssetContent(string $relativePath): string
     {
+        static $cache = [];
+
+        if (isset($cache[$relativePath])) {
+            return $cache[$relativePath];
+        }
+
         $publishedPath = public_path('vendor/onboarding-tour/' . $relativePath);
         if (file_exists($publishedPath)) {
-            return file_get_contents($publishedPath) ?: '';
+            return $cache[$relativePath] = file_get_contents($publishedPath) ?: '';
         }
 
         $packagePath = self::getPackagePath('resources/' . $relativePath);
         if (file_exists($packagePath)) {
-            return file_get_contents($packagePath) ?: '';
+            return $cache[$relativePath] = file_get_contents($packagePath) ?: '';
         }
 
-        return '';
+        return $cache[$relativePath] = '';
     }
 }
