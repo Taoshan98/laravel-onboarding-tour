@@ -150,6 +150,7 @@ class TourCacheService
                         'id' => $s->id,
                         'element_selector' => $s->element_selector,
                         'target_text' => $s->target_text,
+                        'trigger_selector' => $s->trigger_selector,
                         'title' => $s->title,
                         'description' => $s->description,
                         'video_url' => $s->video_url,

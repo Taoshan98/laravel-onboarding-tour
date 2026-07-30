@@ -11,10 +11,12 @@ class OnboardingTourStep extends Model
         'tour_id',
         'element_selector',
         'target_text',
+        'trigger_selector',
         'title',
         'description',
         'video_url',
         'card_size',
+        'is_action',
         'position',
         'sort_order',
     ];
@@ -23,6 +25,7 @@ class OnboardingTourStep extends Model
         'title'       => 'array',
         'description' => 'array',
         'video_url'   => 'array',
+        'is_action'   => 'boolean',
         'sort_order'  => 'integer',
     ];
 

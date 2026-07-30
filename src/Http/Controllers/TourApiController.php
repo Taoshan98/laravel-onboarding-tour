@@ -80,10 +80,12 @@ class TourApiController extends Controller
             'steps' => 'required|array',
             'steps.*.element_selector' => 'required|string',
             'steps.*.target_text' => 'nullable|string',
-            'steps.*.title' => 'required',
-            'steps.*.description' => 'required',
+            'steps.*.trigger_selector' => 'nullable|string',
+            'steps.*.title' => 'nullable',
+            'steps.*.description' => 'nullable',
             'steps.*.video_url' => 'nullable',
             'steps.*.card_size' => 'nullable|string',
+            'steps.*.is_action' => 'nullable|boolean',
             'steps.*.position' => 'nullable|string',
             'steps.*.sort_order' => 'nullable|integer',
         ]);
@@ -103,6 +105,10 @@ class TourApiController extends Controller
         // Synchronize steps
         $existingStepIds = [];
         foreach ($data['steps'] as $idx => $sData) {
+            $isAction = isset($sData['is_action']) ? (bool) $sData['is_action'] : (($sData['card_size'] ?? '') === 'action');
+            $title = !empty($sData['title']) ? $sData['title'] : ($isAction ? ['it' => 'Navigazione Automatica', 'en' => 'Auto Action'] : []);
+            $description = !empty($sData['description']) ? $sData['description'] : [];
+
             $step = OnboardingTourStep::updateOrCreate(
                 [
                     'tour_id' => $tour->id,
@@ -111,10 +117,12 @@ class TourApiController extends Controller
                 [
                     'element_selector' => $sData['element_selector'],
                     'target_text' => $sData['target_text'] ?? null,
-                    'title' => $sData['title'],
-                    'description' => $sData['description'],
+                    'trigger_selector' => $sData['trigger_selector'] ?? null,
+                    'title' => $title,
+                    'description' => $description,
                     'video_url' => $this->sanitizeUrl($sData['video_url'] ?? null),
                     'card_size' => $sData['card_size'] ?? 'md',
+                    'is_action' => $isAction,
                     'position' => $sData['position'] ?? 'auto',
                 ]
             );

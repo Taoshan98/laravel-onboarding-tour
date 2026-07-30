@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('tour_id')->constrained('onboarding_tours')->cascadeOnDelete();
             $table->string('element_selector');
             $table->string('target_text')->nullable();
+            $table->string('trigger_selector')->nullable();
             $table->json('title');
             $table->json('description');
             $table->json('video_url')->nullable();
