@@ -94,7 +94,7 @@ Other publishable assets:
 # Blade views (for customization)
 php artisan vendor:publish --tag="onboarding-tour-views"
 
-# JS/CSS assets (to serve from public/ instead of inline)
+# Production-minified JS/CSS bundle assets (publishes tour-engine.js and tour-styles.css to public/vendor/onboarding-tour/)
 php artisan vendor:publish --tag="onboarding-tour-assets"
 ```
 

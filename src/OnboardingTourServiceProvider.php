@@ -59,8 +59,8 @@ class OnboardingTourServiceProvider extends ServiceProvider
             ], 'onboarding-tour-lang');
 
             $this->publishes([
-                __DIR__ . '/../resources/js' => public_path('vendor/onboarding-tour/js'),
-                __DIR__ . '/../resources/css' => public_path('vendor/onboarding-tour/css'),
+                __DIR__ . '/../resources/js/tour-engine.js' => public_path('vendor/onboarding-tour/js/tour-engine.js'),
+                __DIR__ . '/../resources/css/tour-styles.css' => public_path('vendor/onboarding-tour/css/tour-styles.css'),
             ], 'onboarding-tour-assets');
         }
     }
