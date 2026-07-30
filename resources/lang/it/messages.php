@@ -64,7 +64,7 @@ return [
     'step_position_label' => 'Posizione',
     'media_url_label' => 'URL Media',
     'route_pattern_label' => 'Rotta / Pattern URL',
-    'route_pattern_help' => 'Usa * per associare pagine dinamiche (es. production_sites/*/edit).',
+    'route_pattern_help' => 'Usa * per associare pagine dinamiche (es. users/*/edit).',
     'wildcard_toggle_label' => 'Applica a pagine simili',
     'wildcard_toggle_help' => 'Valido per tutti gli ID dinamici (es. /1/edit, /2/edit)',
     'advanced_url_rule' => 'Avanzate URL',

@@ -64,7 +64,7 @@ return [
     'step_position_label' => 'Position',
     'media_url_label' => 'Media URL',
     'route_pattern_label' => 'Route / URL Pattern',
-    'route_pattern_help' => 'Use * for dynamic pages (e.g. production_sites/*/edit).',
+    'route_pattern_help' => 'Use * for dynamic pages (e.g. users/*/edit).',
     'wildcard_toggle_label' => 'Apply to similar pages',
     'wildcard_toggle_help' => 'Applies to all dynamic IDs (e.g. /1/edit, /2/edit)',
     'advanced_url_rule' => 'Advanced URL',

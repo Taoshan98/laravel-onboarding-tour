@@ -4,7 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/taoshan98/laravel-onboarding-tour.svg?style=flat-square)](https://packagist.org/packages/taoshan98/laravel-onboarding-tour)
 [![License](https://img.shields.io/packagist/l/taoshan98/laravel-onboarding-tour.svg?style=flat-square)](LICENSE)
 
-An interactive onboarding tour package for Laravel. Build guided tours visually in the browser — no code required. Features a live visual builder, multi-language support, theme customization, keyboard navigation, media lightbox, and Livewire v3 SPA compatibility.
+An interactive onboarding tour package for Laravel. Build guided tours visually in the browser — no code required. Features a live visual builder, multi-language support, theme customization, auto-navigation action steps, interactive UI navigation mode, wildcard route matching, keyboard navigation, media lightbox, and Livewire v3 SPA compatibility.
 
 **Zero JS/CSS dependencies.** Works on any Laravel app with or without Tailwind, Bootstrap, or Flux.
 
@@ -13,8 +13,14 @@ An interactive onboarding tour package for Laravel. Build guided tours visually 
 ## Features
 
 - **Visual Builder** — Click any element on your page to create tour steps. Drag & drop to reorder. Live preview.
+- **Auto Navigation Steps** — Create silent action steps that automatically click tabs, steppers, or buttons to navigate interfaces without showing cards.
+- **Interactive UI Mode** — Temporarily suspend inspector DOM selection to click sub-tabs, dropdowns, and navigate UI while staying inside the builder.
+- **Wildcard Route Matching** — Match dynamic routes easily (e.g. `users/*/edit`) with a one-click toggle ("Applica a pagine simili").
+- **Form Submission Guard** — Advanced programmatic click protection (`safeClick`) that intercepts native `form.submit()` and event dispatches to prevent unintended page reloads during tour playback.
+- **Async UI Resilience** — Extended polling resilience (up to 1.5s) for slow Livewire v3, Alpine.js, or AJAX network requests to render DOM nodes.
 - **Multi-Language (i18n)** — Auto-discovers host locales from `lang/` directories and config. Per-step titles, descriptions, and media URLs for each language.
 - **Theme Customization** — Global and per-tour themes. Card styles (auto, glass, dark, light), accent colors, backdrop presets, highlight styles, live preview.
+- **Clean Enterprise Aesthetics** — 100% SVG vector icon set, zero emojis, compact modal layout with accordion for advanced options.
 - **Keyboard Shortcuts** — Full hotkey navigation with an interactive shortcuts palette (`?`).
 - **Media Lightbox** — Expandable full-screen viewer for images, GIFs, YouTube, Vimeo, and MP4 videos.
 - **Dark Mode** — Automatically follows your host app's theme (`.dark` class or `[data-theme="dark"]`).
@@ -31,17 +37,17 @@ An interactive onboarding tour package for Laravel. Build guided tours visually 
 ![Demo](screenshots/demo.gif)
 
 ### Visual Builder Mode
-Click the **Builder** button to enter inspector mode. A floating toolbar appears at the top with quick actions.
+Click the **Builder** button to enter inspector mode. A floating toolbar appears at the top with quick actions including **Interactive UI Mode** and **Steps Drawer**.
 
 ![Builder Mode](screenshots/02-builder-mode.png)
 
-### Step Configuration Modal
-Click any element to configure a tour step. The default language (`EN ★`) is shown first, with tabs for all discovered locales.
+### Compact Step Builder Modal
+Configure tour steps easily with a segmented toggle between **Explanation Card** and **Auto Navigation**. Advanced options (CSS selector, breadcrumbs, card size, media URL) are neatly folded inside an accordion.
 
 ![Step Builder Modal](screenshots/03-step-builder-modal.png)
 
 ### Steps Manager Drawer
-Manage all steps in a side drawer. Drag to reorder, edit, delete, or preview individual steps.
+Manage all steps in a side drawer. Toggle wildcard URL matching ("Applica a pagine simili"), drag to reorder, edit, delete, or test individual steps.
 
 ![Steps Drawer](screenshots/04-steps-drawer.png)
 
@@ -121,13 +127,29 @@ This injects the CSS, JS, and runtime configuration invisibly (headless).
 
 ### 3. Build a tour
 
-1. Click the **Builder** button (or press `B`) to enter inspector mode
-2. Click any element on the page to select it as a step target
-3. Fill in the title, description, and optional media URL for each language
-4. Click **Add Step** — repeat for all steps
-5. Press `Ctrl+S` (or `Cmd+S`) or click **Save Tour** to persist
+1. Click the **Builder** button (or press `B`) to enter inspector mode.
+2. If you need to switch tabs or open dropdowns before selecting an element, click **Navigazione UI** (Interactive Mode).
+3. Click any element on the page to select it as a step target.
+4. Choose the step mode:
+   - **Card Spiegazione**: Shows a card with title, description, and optional media.
+   - **Navigazione Automatica**: Silently clicks the target element to navigate UI and immediately moves to the next step.
+5. Click **Add Step** — repeat for all steps.
+6. Press `Ctrl+S` (or `Cmd+S`) or click **Save Tour** to persist.
 
 The tour is saved via the REST API and cached automatically.
+
+---
+
+## Key Features Breakdown
+
+### Auto Navigation (Action Steps)
+Action steps execute a programmatic click on the targeted element (e.g. tab buttons, wizard step numbers) without displaying a card overlay. This allows seamless transitions across sub-interfaces before displaying subsequent explanation cards.
+
+### Form Submission & Reload Guard
+The engine includes a `safeClick` mechanism with `HTMLFormElement.prototype.submit` interception. Programmatic clicks executed by the tour runner are guarded so that buttons inside `<form>` elements or custom event handlers (like `@save-section`) do not trigger unintended page reloads or form submissions.
+
+### Wildcard Route Matching
+Enable "Applica a pagine simili" in the Steps Drawer to match dynamic routes (e.g., `/users/1/edit` matching `users/*/edit`).
 
 ---
 
@@ -142,9 +164,7 @@ The package automatically discovers all locales available in your host applicati
 
 ### Default language indicator
 
-The language configured in `config('app.locale')` (your `config/app.php` default) is shown **first** in the builder modal with a **★** badge. If an admin fills in content only for the default language, that content is used as fallback for all other languages.
-
-### Setting locales explicitly
+The language configured in `config('app.locale')` is shown **first** in the builder modal. If an admin fills in content only for the default language, that content is used as fallback for all other languages.
 
 ```php
 // config/onboarding-tour.php
@@ -200,10 +220,10 @@ Themes are managed entirely through the **admin UI** — no config files needed.
 
 | Preset | Color |
 |---|---|
-| 🌌 Midnight Slate | `#0f172a` |
-| 🔮 Deep Indigo | `#1e1b4b` |
-| 🌲 Emerald Night | `#022c22` |
-| 🌪️ Soft Charcoal | `#334155` |
+| Midnight Slate | `#0f172a` |
+| Deep Indigo | `#1e1b4b` |
+| Emerald Night | `#022c22` |
+| Soft Charcoal | `#334155` |
 
 Opacity is adjustable from 20% to 95% via the live preview slider.
 
@@ -230,8 +250,6 @@ return [
     'cache_prefix' => 'onboarding_tour:', // Redis key prefix
 ];
 ```
-
-> **Note:** Theme settings are not in the config file — they are managed through the admin UI and persisted to the database automatically.
 
 ---
 
@@ -261,10 +279,12 @@ All endpoints use the configured `route_prefix` and `middleware`.
                    │
       ┌────────────▼────────────┐
       │   tour-engine.js        │
-      │   (Vanilla JS, IIFE)   │
+      │   (Vanilla JS, IIFE)    │
       │                         │
       │  • Tour runner          │
       │  • Visual builder       │
+      │  • Auto-navigation      │
+      │  • Form reload guard    │
       │  • Theme editor         │
       │  • Keyboard shortcuts   │
       │  • Media lightbox       │
@@ -289,23 +309,6 @@ All endpoints use the configured `route_prefix` and `middleware`.
       │  • OnboardingTourUser   │
       └─────────────────────────┘
 ```
-
-### Tour lifecycle
-
-1. `<x-onboarding-tour />` loads cached tour data for the current route
-2. If a tour exists and the user hasn't completed/dismissed it, the **Start Tour** button appears
-3. User clicks start (or tour auto-starts) → spotlight overlay + popover card
-4. User navigates steps with buttons or keyboard
-5. On finish/dismiss → `POST /complete` marks the user's status
-6. Admin builder saves/updates tours via `POST /save`
-
-### Caching
-
-- Tour data is cached per-route with the configured TTL
-- Global theme is persisted to the database and cached forever
-- If the cache is cleared, theme data is automatically rebuilt from the database
-- Saving a tour automatically flushes the route's cache
-- Updating the global theme flushes all route caches
 
 ---
 
@@ -343,8 +346,6 @@ Available languages: `en`, `it`. Add more by creating new files in `lang/vendor/
 - `http://` URLs are automatically upgraded to `https://`
 - Dangerous schemes (`javascript:`, `data:text/html`, etc.) are blocked
 - External links use `rel="noopener noreferrer"` protection
-
-If you discover a security vulnerability, please email info@taoshan.dev directly.
 
 ---
 
