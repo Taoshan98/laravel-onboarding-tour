@@ -231,6 +231,7 @@
             this.globalTheme = this.config.global_theme || { ...THEME_DEFAULTS };
             this.currentTour = this.config.tour || null;
             this.draftSteps = this.currentTour ? [...(this.currentTour.steps || [])] : [];
+            this.draftRoutePattern = this.currentTour?.route_name || this.config?.route_pattern || this.config?.route_name || window.location.pathname;
             const tourTheme = this.currentTour?.theme_settings;
             this.themeSettings = tourTheme?.use_custom_theme ? { ...this.globalTheme, ...tourTheme } : { ...this.globalTheme, use_custom_theme: false };
             this.applyThemeVariables(this.themeSettings);
@@ -443,13 +444,16 @@
         },
 
         _renderStepsTab() {
-            if (!this.draftSteps.length) return `<div class="flex-1 overflow-y-auto p-5" id="tour-drawer-steps-list"><div class="flex flex-col items-center justify-center p-8 text-center text-zinc-400"><svg class="w-12 h-12 mb-3 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><p class="text-sm font-semibold text-zinc-600 dark:text-zinc-400">${t('no_steps_title', 'No steps in tour')}</p><p class="text-xs text-zinc-400 mt-1">${t('no_steps_subtitle', 'Click any element to add a step.')}</p></div></div>`;
+            const defaultRoute = this.draftRoutePattern || this.currentTour?.route_name || this.config?.route_pattern || this.config?.route_name || window.location.pathname;
+            const routeCard = `<div class="tour-card-box p-3.5 mb-3 space-y-1.5"><label class="tour-label block" for="tour-route-pattern-input">${t('route_pattern_label', 'Route / URL Pattern')}</label><input type="text" id="tour-route-pattern-input" class="tour-input font-mono text-xs" value="${defaultRoute}" placeholder="e.g. production_sites/*/edit" /><p class="text-[10px] text-zinc-400 leading-normal">${t('route_pattern_help', 'Use * as wildcard (e.g. production_sites/*/edit) to match multiple dynamic pages.')}</p></div>`;
+
+            if (!this.draftSteps.length) return `<div class="flex-1 overflow-y-auto p-5" id="tour-drawer-steps-list">${routeCard}<div class="flex flex-col items-center justify-center p-8 text-center text-zinc-400"><svg class="w-12 h-12 mb-3 text-zinc-300 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><p class="text-sm font-semibold text-zinc-600 dark:text-zinc-400">${t('no_steps_title', 'No steps in tour')}</p><p class="text-xs text-zinc-400 mt-1">${t('no_steps_subtitle', 'Click any element to add a step.')}</p></div></div>`;
             const items = this.draftSteps.map((step, idx) => {
                 const hasMedia = !!(this.getLocalizedText(step.media_url_i18n || step.video_url_i18n || step.media_url || step.video_url));
                 const title = this.getLocalizedText(step.title_i18n || step.title) || `Step #${idx + 1}`;
                 return `<div class="tour-drawer-step-item tour-card-box flex items-center justify-between gap-2.5 px-3 py-2.5 hover:border-blue-500/50 transition-all group" draggable="true" data-idx="${idx}"><div class="flex items-center gap-2 flex-shrink-0"><span class="drag-handle p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded cursor-grab" title="${t('drag_to_reorder', 'Drag')}">${SVG.grip}</span><span class="step-num-badge tour-badge-accent w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center flex-shrink-0">${idx + 1}</span></div><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5"><h5 class="text-xs font-bold text-zinc-800 dark:text-zinc-100 truncate">${title}</h5>${hasMedia ? `<span class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-purple-500 bg-purple-500/10 dark:bg-purple-500/20 px-1.5 py-0.5 rounded-full flex-shrink-0">${SVG.media}</span>` : ''}</div><p class="text-[10px] font-mono text-zinc-400 truncate leading-tight mt-0.5">${step.element_selector}</p></div><div class="flex items-center gap-0.5 flex-shrink-0"><button class="tour-test-step-btn p-1.5 rounded-lg text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30" data-idx="${idx}">${SVG.eye}</button><button class="tour-edit-step-btn p-1.5 rounded-lg text-zinc-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30" data-idx="${idx}">${SVG.pencil}</button><button class="tour-delete-step-btn p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30" data-idx="${idx}">${SVG.trash}</button></div></div>`;
             }).join('');
-            return `<div class="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" id="tour-drawer-steps-list">${items}</div>`;
+            return `<div class="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" id="tour-drawer-steps-list">${routeCard}${items}</div>`;
         },
 
         _renderThemeTab(useCustom) {
@@ -513,6 +517,10 @@
         },
 
         _bindStepActions(panel) {
+            const patternInput = panel.querySelector('#tour-route-pattern-input');
+            if (patternInput) {
+                patternInput.addEventListener('input', e => { this.draftRoutePattern = e.target.value; });
+            }
             const list = document.getElementById('tour-drawer-steps-list');
             let draggedItem = null;
             if (list) {
@@ -551,14 +559,16 @@
 
         saveTourDraft() {
             if (!this.draftSteps.length) { this.showToast(t('no_steps_to_save','No steps to save'),'error'); return; }
-            const route = this.config.route_name || window.location.pathname;
+            const routeInput = document.getElementById('tour-route-pattern-input');
+            const route = routeInput?.value.trim() || this.draftRoutePattern || this.currentTour?.route_name || this.config?.route_pattern || this.config?.route_name || window.location.pathname;
             fetch('/api/onboarding-tour/save', { method:'POST', headers:csrfHeaders(), body:JSON.stringify({ route_name:route, title:`Tour ${route}`, description:`Tour guidato per la rotta ${route}`, auto_start:true, highlight_theme:this.themeSettings.highlight_style||'minimal', theme_settings:this.themeSettings, steps:this.draftSteps }) })
                 .then(r => r.json()).then(data => { if (data.success) { this.showToast(t('tour_saved_success','Tour saved!'),'success'); setTimeout(() => window.location.reload(),1200); } else { this.showToast(t('save_error','Error:')+' '+(data.error||t('unknown_error','unknown')),'error'); } })
                 .catch(e => { console.error(e); this.showToast(t('server_error','Server error'),'error'); });
         },
 
         deleteEntireTour() {
-            const route = this.config.route_name || window.location.pathname;
+            const routeInput = document.getElementById('tour-route-pattern-input');
+            const route = routeInput?.value.trim() || this.draftRoutePattern || this.currentTour?.route_name || this.config?.route_pattern || this.config?.route_name || window.location.pathname;
             fetch('/api/onboarding-tour/delete', { method:'POST', headers:csrfHeaders(), body:JSON.stringify({ route_name:route }) })
                 .then(r => r.json()).then(data => { if (data.success) { this.showToast(t('tour_deleted_success','Tour deleted'),'success'); setTimeout(() => window.location.reload(),1000); } else { this.showToast(t('error_deleting_tour','Error'),'error'); } })
                 .catch(console.error);

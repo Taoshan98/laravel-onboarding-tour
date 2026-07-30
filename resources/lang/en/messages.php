@@ -63,6 +63,8 @@ return [
     'step_target_label' => 'Target Selector',
     'step_position_label' => 'Position',
     'media_url_label' => 'Media URL',
+    'route_pattern_label' => 'Route / URL Pattern',
+    'route_pattern_help' => 'Use * as wildcard (e.g. production_sites/*/edit) to match multiple dynamic pages.',
     'select_element_prompt' => 'Click an element to select it',
 
     // Messages & Alerts

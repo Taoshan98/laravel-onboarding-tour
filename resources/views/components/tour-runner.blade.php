@@ -1,5 +1,6 @@
 @php
     $routeName = \Illuminate\Support\Facades\Route::currentRouteName() ?? request()->path();
+    $routePattern = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::normalizeRoutePattern($routeName);
     $user = auth()->user();
     $tourData = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getTourForRoute($routeName, $user);
     $globalTheme = \Taoshan\LaravelOnboardingTour\Services\TourCacheService::getGlobalTheme();
@@ -8,6 +9,7 @@
 
     $configJson = json_encode([
         'route_name' => $routeName,
+        'route_pattern' => $routePattern,
         'tour' => $tourData,
         'global_theme' => $globalTheme,
         'translations' => trans('onboarding-tour::messages'),

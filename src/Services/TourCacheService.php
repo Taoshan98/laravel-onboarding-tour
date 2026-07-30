@@ -74,10 +74,12 @@ class TourCacheService
 
         $ttl = config('onboarding-tour.cache_ttl', 86400);
         $prefix = config('onboarding-tour.cache_prefix', 'onboarding_tour:');
-        $cacheKey = "{$prefix}route:{$routeName}";
         $globalTheme = self::getGlobalTheme();
 
-        $tourData = Cache::remember($cacheKey, $ttl, function () use ($routeName, $globalTheme) {
+        $exactKey = "{$prefix}route:{$routeName}";
+        if (Cache::has($exactKey)) {
+            $tourData = Cache::get($exactKey);
+        } else {
             $tour = OnboardingTour::where('route_name', $routeName)
                 ->where('is_active', true)
                 ->with(['steps' => function ($q) {
@@ -86,38 +88,82 @@ class TourCacheService
                 ->first();
 
             if (!$tour) {
+                $normalized = self::normalizeRoutePattern($routeName);
+                if ($normalized !== $routeName) {
+                    $tour = OnboardingTour::where('route_name', $normalized)
+                        ->where('is_active', true)
+                        ->with(['steps' => function ($q) {
+                            $q->orderBy('sort_order', 'asc');
+                        }])
+                        ->first();
+                }
+            }
+
+            if (!$tour) {
+                $activeTours = OnboardingTour::where('is_active', true)
+                    ->where('route_name', '!=', self::GLOBAL_THEME_ROUTE)
+                    ->with(['steps' => function ($q) {
+                        $q->orderBy('sort_order', 'asc');
+                    }])
+                    ->get();
+
+                $cleanRoute = ltrim($routeName, '/');
+                $normalizedRoute = ltrim(self::normalizeRoutePattern($routeName), '/');
+
+                foreach ($activeTours as $t) {
+                    $cleanPattern = ltrim($t->route_name, '/');
+                    $normalizedPattern = self::normalizeRoutePattern($cleanPattern);
+
+                    if (\Illuminate\Support\Str::is($cleanPattern, $cleanRoute) ||
+                        \Illuminate\Support\Str::is($normalizedPattern, $cleanRoute) ||
+                        \Illuminate\Support\Str::is($cleanPattern, $normalizedRoute) ||
+                        \Illuminate\Support\Str::is($normalizedPattern, $normalizedRoute)) {
+                        $tour = $t;
+                        break;
+                    }
+                }
+            }
+
+            if (!$tour) {
                 return null;
             }
 
-            $tourThemeSettings = $tour->theme_settings ?? [];
-            $useCustom = isset($tourThemeSettings['use_custom_theme']) ? (bool) $tourThemeSettings['use_custom_theme'] : false;
+            $canonicalKey = "{$prefix}route:{$tour->route_name}";
+            $tourData = Cache::remember($canonicalKey, $ttl, function () use ($tour, $globalTheme) {
+                $tourThemeSettings = $tour->theme_settings ?? [];
+                $useCustom = isset($tourThemeSettings['use_custom_theme']) ? (bool) $tourThemeSettings['use_custom_theme'] : false;
 
-            $effectiveTheme = $useCustom
-                ? array_merge($globalTheme, $tourThemeSettings, ['use_custom_theme' => true])
-                : array_merge($globalTheme, ['use_custom_theme' => false]);
+                $effectiveTheme = $useCustom
+                    ? array_merge($globalTheme, $tourThemeSettings, ['use_custom_theme' => true])
+                    : array_merge($globalTheme, ['use_custom_theme' => false]);
 
-            return [
-                'id' => $tour->id,
-                'route_name' => $tour->route_name,
-                'title' => $tour->title,
-                'description' => $tour->description,
-                'auto_start' => $tour->auto_start,
-                'highlight_theme' => $tour->highlight_theme ?? 'minimal',
-                'theme_settings' => $effectiveTheme,
-                'global_theme' => $globalTheme,
-                'steps' => $tour->steps->map(fn($s) => [
-                    'id' => $s->id,
-                    'element_selector' => $s->element_selector,
-                    'target_text' => $s->target_text,
-                    'title' => $s->title,
-                    'description' => $s->description,
-                    'video_url' => $s->video_url,
-                    'card_size' => $s->card_size ?? 'md',
-                    'position' => $s->position,
-                    'sort_order' => $s->sort_order,
-                ])->toArray(),
-            ];
-        });
+                return [
+                    'id' => $tour->id,
+                    'route_name' => $tour->route_name,
+                    'title' => $tour->title,
+                    'description' => $tour->description,
+                    'auto_start' => $tour->auto_start,
+                    'highlight_theme' => $tour->highlight_theme ?? 'minimal',
+                    'theme_settings' => $effectiveTheme,
+                    'global_theme' => $globalTheme,
+                    'steps' => $tour->steps->map(fn($s) => [
+                        'id' => $s->id,
+                        'element_selector' => $s->element_selector,
+                        'target_text' => $s->target_text,
+                        'title' => $s->title,
+                        'description' => $s->description,
+                        'video_url' => $s->video_url,
+                        'card_size' => $s->card_size ?? 'md',
+                        'position' => $s->position,
+                        'sort_order' => $s->sort_order,
+                    ])->toArray(),
+                ];
+            });
+
+            if ($routeName !== $tour->route_name) {
+                Cache::put($exactKey, $tourData, $ttl);
+            }
+        }
 
         if (!$tourData) {
             return null;
@@ -230,9 +276,31 @@ class TourCacheService
         return !empty($result) ? $result : ['it', 'en'];
     }
 
+    public static function normalizeRoutePattern(string $routeName): string
+    {
+        // Replace URL parameter placeholders like {id}, {site}, {param} with *
+        $pattern = preg_replace('/\{[^}]+\}/', '*', $routeName);
+        // Replace numeric segments (e.g. /1/, /123/) with /*/
+        $pattern = preg_replace('/(?<=\/)\d+(?=\/|$)/', '*', $pattern);
+        // Replace UUID segments with /*/
+        $pattern = preg_replace('/(?<=\/)[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=\/|$)/', '*', $pattern);
+        return $pattern;
+    }
+
     public static function flushCacheForRoute(string $routeName): void
     {
         $prefix = config('onboarding-tour.cache_prefix', 'onboarding_tour:');
         Cache::forget("{$prefix}route:{$routeName}");
+
+        $normalized = self::normalizeRoutePattern($routeName);
+        if ($normalized !== $routeName) {
+            Cache::forget("{$prefix}route:{$normalized}");
+        }
+
+        try {
+            OnboardingTour::where('route_name', '!=', self::GLOBAL_THEME_ROUTE)
+                ->select('route_name')->get()
+                ->each(fn($tour) => Cache::forget("{$prefix}route:{$tour->route_name}"));
+        } catch (\Throwable $e) {}
     }
 }

@@ -63,6 +63,8 @@ return [
     'step_target_label' => 'Selettore Target',
     'step_position_label' => 'Posizione',
     'media_url_label' => 'URL Media',
+    'route_pattern_label' => 'Rotta / Pattern URL',
+    'route_pattern_help' => 'Usa * come wildcard (es. production_sites/*/edit) per associare più pagine dinamiche.',
     'select_element_prompt' => 'Clicca un elemento per selezionarlo',
 
     // Messages & Alerts
