@@ -18,11 +18,12 @@ An interactive onboarding tour package for Laravel. Build guided tours visually 
 - **Interactive UI Mode** — Temporarily suspend inspector DOM selection to click sub-tabs, dropdowns, and navigate UI while staying inside the builder.
 - **Wildcard Route Matching** — Match dynamic routes easily (e.g. `users/*/edit`) with a default one-click toggle ("Applica a pagine simili") that automatically strips numeric IDs/UUIDs and host domains.
 - **Redis & Zero-SQL Backend Caching** — High-performance caching layer with Redis store support, Redis Cache Tags, cached user progress maps (0 SQL queries on page views for authenticated users), and Eloquent model observers to prevent DB-cache desync.
+- **In-Memory Static Asset Caching** — Zero disk I/O when rendering Blade views (`getAssetContent`) thanks to static memory caching of minified CSS and JS bundles.
 - **Instant FOUC-Free Styling** — Blade `@once` CSS injection ensures tour buttons render fully styled from the first millisecond of page load.
 - **Modular & Minified Assets** — Clean modular CSS (`resources/css/modules/`) and JS (`resources/js/modules/`) with automated build script (`composer build-assets`) that generates production-minified bundles.
 - **Form Submission Guard** — Advanced programmatic click protection (`safeClick`) that intercepts native `form.submit()` and event dispatches to prevent unintended page reloads during tour playback.
 - **Async UI Resilience** — Extended polling resilience (up to 1.5s) for slow Livewire v3, Alpine.js, or AJAX network requests to render DOM nodes.
-- **Multi-Language (i18n)** — Auto-discovers host locales from `lang/` directories and config. Per-step titles, descriptions, and media URLs for each language.
+- **Multi-Language (i18n)** — Unified translation architecture across Eloquent models and Service layers. Auto-discovers host locales from `lang/` directories and config. Per-step titles, descriptions, and media URLs for each language.
 - **Theme Customization** — Global and per-tour themes. Card styles (auto, glass, dark, light), accent colors, backdrop presets, highlight styles, live preview.
 - **Clean Enterprise Aesthetics** — 100% SVG vector icon set, zero emojis, compact modal layout with accordion for advanced options.
 - **Keyboard Shortcuts** — Full hotkey navigation with an interactive shortcuts palette (`?`).
@@ -165,6 +166,7 @@ Wildcard matching ("Applica a pagine simili") is enabled by default to match dyn
 The package includes a dedicated caching architecture designed for high-traffic enterprise applications:
 
 - **Zero-SQL Page Views**: User completion/dismissal status is cached in a Redis user status map (`{$prefix}user_status:{userType}:{userId}`). Requests from authenticated users incur **0 SQL queries** during page rendering.
+- **In-Memory Asset Caching**: Static memory caching in `getAssetContent()` prevents reading CSS/JS bundles from disk on every view render.
 - **Redis Cache Tags**: Supports Redis tags (`Cache::tags(['onboarding_tour'])`) for instant bulk cache flushing.
 - **Eloquent Model Observers**: `OnboardingTour` and `OnboardingTourStep` models automatically trigger cache invalidation on `saved` and `deleted` events, preventing database-cache desynchronization even when modifying records outside the API (e.g. via Tinker or Seeders).
 - **Dedicated Store Config**: Route package caching to a specific cache store via `ONBOARDING_TOUR_CACHE_STORE=redis`.
@@ -187,6 +189,35 @@ php scripts/build-assets.php
 ```
 
 This concatenates and minifies the source modules into standalone production bundles (`resources/css/tour-styles.css` & `resources/js/tour-engine.js`).
+
+---
+
+## Local Development & Testing
+
+To test this package locally in your Laravel application before publishing to Packagist, register it as a `path` repository in your project's `composer.json`:
+
+```json
+"repositories": [
+    {
+        "type": "path",
+        "url": "/path/to/laravel-onboarding-tour",
+        "options": {
+            "symlink": true
+        }
+    }
+],
+"require": {
+    "taoshan98/laravel-onboarding-tour": "*@dev"
+}
+```
+
+Then update composer, publish assets, and clear your application cache:
+
+```bash
+composer update taoshan98/laravel-onboarding-tour
+php artisan vendor:publish --tag=onboarding-tour-assets --force
+php artisan optimize:clear
+```
 
 ---
 
